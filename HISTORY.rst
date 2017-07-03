@@ -1,4 +1,4 @@
-.. commit signature, "date_str author_str sha_str"
+.. 2017-07-03 sonofeft 21fa041b25c6af83f0c05a606876740b80d7d0f6
    Maintain spacing of "History" and "GitHub Log" titles
 
 History
@@ -6,6 +6,12 @@ History
 
 GitHub Log
 ----------
+
+* Jul 03, 2017
+    - (by: sonofeft) 
+        - First commit of code developed with mercurial.
+    - (by: Charlie Taylor) 
+        - Initial commit
 
 
 Mercurial Log
@@ -61,4 +67,3 @@ Mercurial Log
 * Jun 29, 2017
     - (by: sonofeft)
         - First Created DigiPlot with PyHatch
-
