@@ -1,0 +1,1 @@
+hg log --template "* {date|isodate} {author|person}\n    - {desc}\n\n"
