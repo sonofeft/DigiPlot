@@ -36,12 +36,12 @@ The first time you run DigiPlot, it is recommended that you practice with the sa
     <tr>
         <td> 
             <a  href="./_static/excel_verify_sample.png">
-            <img src="./_static/excel_verify_sample.png" width="80%">
+            <img src="./_static/excel_verify_sample.png"">
             </a>
         </td>
         <td> 
             <a  href="./_static/libre_verify_sample.png">
-            <img src="./_static/libre_verify_sample.png" width="80%">
+            <img src="./_static/libre_verify_sample.png"">
             </a>
         </td>
     </tr>
@@ -67,22 +67,22 @@ Place the cross-hairs on each plot point in turn, left click and enter the numer
     <tr>
         <td> 
             <a  href="./_static/click_xmin.png">
-            <img src="./_static/click_xmin.png" width="80%">
+            <img src="./_static/click_xmin.png">
             </a>
         </td>
         <td> 
             <a  href="./_static/click_xmax.png">
-            <img src="./_static/click_xmax.png" width="80%">
+            <img src="./_static/click_xmax.png">
             </a>
         </td>
         <td> 
             <a  href="./_static/click_ymin.png">
-            <img src="./_static/click_ymin.png" width="80%">
+            <img src="./_static/click_ymin.png">
             </a>
         </td>
         <td> 
             <a  href="./_static/click_ymax.png">
-            <img src="./_static/click_ymax.png" width="80%">
+            <img src="./_static/click_ymax.png">
             </a>
         </td>
     </tr>
@@ -139,7 +139,7 @@ After defining the axes, a ``Distortion Error`` information box appears.  It is 
             <tr>
                 <td> 
                     <a  href="./_static/distortion_error.png">
-                    <img src="./_static/distortion_error.png" width="80%">
+                    <img src="./_static/distortion_error.png">
                     </a>
                 </td>
             </tr>
@@ -151,7 +151,7 @@ After defining the axes, a ``Distortion Error`` information box appears.  It is 
             <tr>
                 <td> 
                     <a  href="./_static/distortion_error_zoomed.png">
-                    <img src="./_static/distortion_error_zoomed.png" width="80%">
+                    <img src="./_static/distortion_error_zoomed.png">
                     </a>
                 </td>
             </tr>
@@ -159,7 +159,7 @@ After defining the axes, a ``Distortion Error`` information box appears.  It is 
         </td>
         <td> 
             <a  href="./_static/sample_plot_zoom.png">
-            <img src="./_static/sample_plot_zoom.png" width="80%">
+            <img src="./_static/sample_plot_zoom.png">
             </a>
         </td>
     </tr>
