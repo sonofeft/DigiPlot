@@ -10,23 +10,18 @@ if sys.version_info < (3,):
     from cStringIO import StringIO
 else:
     from io import BytesIO as StringIO
-
+import os
 from digiplot.sample_img import TEST_IMAGE
 
-if sys.platform=="win32":
-    arial10  =  ImageFont.truetype ( "arialbd.ttf", 10 )
-    arial16  =  ImageFont.truetype ( "arialbd.ttf", 16 )
-    arial24  =  ImageFont.truetype ( "arialbd.ttf", 24 )
-    arial36  =  ImageFont.truetype ( "arialbd.ttf", 36 )
-    arial48  =  ImageFont.truetype ( "arialbd.ttf", 48 )
-    arial72  =  ImageFont.truetype ( "arialbd.ttf", 72 )
-else:
-    arial10  =  ImageFont.truetype ( "resources/UbuntuMono-RI.ttf", 10 )
-    arial16  =  ImageFont.truetype ( "resources/UbuntuMono-RI.ttf", 16 )
-    arial24  =  ImageFont.truetype ( "resources/UbuntuMono-RI.ttf", 24 )
-    arial36  =  ImageFont.truetype ( "resources/UbuntuMono-RI.ttf", 36 )
-    arial48  =  ImageFont.truetype ( "resources/UbuntuMono-RI.ttf", 48 )
-    arial72  =  ImageFont.truetype ( "resources/UbuntuMono-RI.ttf", 72 )
+here = os.path.abspath(os.path.dirname(__file__))
+font_path = os.path.join( here, 'fonts', 'FreeSerifBoldItalic.ttf' )
+
+arial10  =  ImageFont.truetype ( font_path, 10 )
+arial16  =  ImageFont.truetype ( font_path, 16 )
+arial24  =  ImageFont.truetype ( font_path, 24 )
+arial36  =  ImageFont.truetype ( font_path, 36 )
+arial48  =  ImageFont.truetype ( font_path, 48 )
+arial72  =  ImageFont.truetype ( font_path, 72 )
 
 
 def clamp(n, minn, maxn):
