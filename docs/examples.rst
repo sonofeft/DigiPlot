@@ -35,13 +35,13 @@ The first time you run DigiPlot, it is recommended that you practice with the sa
     <th>Excel Output</th>  <th>OpenOffice Output</th></tr>
     <tr>
         <td> 
-            <a  href="./_static/excel_verify_sample.png">
-            <img src="./_static/excel_verify_sample.png"">
+            <a  href="./_static/excel_verify_sample.jpg">
+            <img src="./_static/excel_verify_sample.jpg">
             </a>
         </td>
         <td> 
-            <a  href="./_static/libre_verify_sample.png">
-            <img src="./_static/libre_verify_sample.png"">
+            <a  href="./_static/libre_verify_sample.jpg">
+            <img src="./_static/libre_verify_sample.jpg">
             </a>
         </td>
     </tr>
@@ -66,45 +66,45 @@ Place the cross-hairs on each plot point in turn, left click and enter the numer
     <th>Click Xmin</th><th>Click Xmax</th><th>Click Ymin</th><th>Click Ymax</th></tr>
     <tr>
         <td> 
-            <a  href="./_static/click_xmin.png">
-            <img src="./_static/click_xmin.png">
+            <a  href="./_static/click_xmin.jpg">
+            <img src="./_static/click_xmin.jpg">
             </a>
         </td>
         <td> 
-            <a  href="./_static/click_xmax.png">
-            <img src="./_static/click_xmax.png">
+            <a  href="./_static/click_xmax.jpg">
+            <img src="./_static/click_xmax.jpg">
             </a>
         </td>
         <td> 
-            <a  href="./_static/click_ymin.png">
-            <img src="./_static/click_ymin.png">
+            <a  href="./_static/click_ymin.jpg">
+            <img src="./_static/click_ymin.jpg">
             </a>
         </td>
         <td> 
-            <a  href="./_static/click_ymax.png">
-            <img src="./_static/click_ymax.png">
+            <a  href="./_static/click_ymax.jpg">
+            <img src="./_static/click_ymax.jpg">
             </a>
         </td>
     </tr>
     <tr>
         <td> 
-            <a  href="./_static/enter_xmin.png">
-            <img src="./_static/enter_xmin.png" >
+            <a  href="./_static/enter_xmin.jpg">
+            <img src="./_static/enter_xmin.jpg" >
             </a>
         </td>
         <td> 
-            <a  href="./_static/enter_xmax.png">
-            <img src="./_static/enter_xmax.png" >
+            <a  href="./_static/enter_xmax.jpg">
+            <img src="./_static/enter_xmax.jpg" >
             </a>
         </td>
         <td> 
-            <a  href="./_static/enter_ymin.png">
-            <img src="./_static/enter_ymin.png" >
+            <a  href="./_static/enter_ymin.jpg">
+            <img src="./_static/enter_ymin.jpg" >
             </a>
         </td>
         <td> 
-            <a  href="./_static/enter_ymax.png">
-            <img src="./_static/enter_ymax.png" >
+            <a  href="./_static/enter_ymax.jpg">
+            <img src="./_static/enter_ymax.jpg" >
             </a>
         </td>
     </tr>
@@ -138,8 +138,8 @@ After defining the axes, a ``Distortion Error`` information box appears.  It is 
             </tr>
             <tr>
                 <td> 
-                    <a  href="./_static/distortion_error.png">
-                    <img src="./_static/distortion_error.png">
+                    <a  href="./_static/distortion_error.jpg">
+                    <img src="./_static/distortion_error.jpg">
                     </a>
                 </td>
             </tr>
@@ -150,16 +150,16 @@ After defining the axes, a ``Distortion Error`` information box appears.  It is 
             </tr>
             <tr>
                 <td> 
-                    <a  href="./_static/distortion_error_zoomed.png">
-                    <img src="./_static/distortion_error_zoomed.png">
+                    <a  href="./_static/distortion_error_zoomed.jpg">
+                    <img src="./_static/distortion_error_zoomed.jpg">
                     </a>
                 </td>
             </tr>
             </table>
         </td>
         <td> 
-            <a  href="./_static/sample_plot_zoom.png">
-            <img src="./_static/sample_plot_zoom.png">
+            <a  href="./_static/sample_plot_zoom.jpg">
+            <img src="./_static/sample_plot_zoom.jpg" width=80%>
             </a>
         </td>
     </tr>
@@ -183,8 +183,8 @@ Select points on the plot by placing the cross-hairs on the point and left click
     <th>Left Click to Select Points</th></tr>
     <tr>
         <td> 
-            <a  href="./_static/pick_points.png">
-            <img src="./_static/pick_points.png">
+            <a  href="./_static/pick_points.jpg">
+            <img src="./_static/pick_points.jpg" width=80%>
             </a>
         </td>
     </tr>
@@ -206,8 +206,8 @@ Notice also, that you can sort the points by increasing X value by clicking the 
     <th>List Box Shows Points</th></tr>
     <tr>
         <td> 
-            <a  href="./_static/digiplot_sample_usage.png">
-            <img src="./_static/digiplot_sample_usage.png">
+            <a  href="./_static/digiplot_sample_usage.jpg">
+            <img src="./_static/digiplot_sample_usage.jpg">
             </a>
         </td>
     </tr>
