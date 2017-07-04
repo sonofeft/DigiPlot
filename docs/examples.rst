@@ -20,7 +20,13 @@ The first time you run DigiPlot, it is recommended that you practice with the sa
 
 **My Results of running DigiPlot on the Sample Polynomial Plot.**
 
-**y = 0.02x2 + 0.2011x + 1.9993** well within 1% of the actual data.
+.. code::
+
+    y = 1.99928677837 + 0.201139355161*x + 0.0199798904881*x**2
+    
+        Correlation Coefficient = 0.999997115772
+        Standard Deviation = 0.0293109315872
+        Percent Standard Deviation = 0.438930620106%
 
 .. raw:: html
 
