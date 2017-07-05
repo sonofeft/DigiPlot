@@ -221,7 +221,7 @@ Save to File or Clipboard
 
 Typically, the goal of digitizing a plot is to simply get the data into another application. It is recommended that after the X,Y data is generated, that you save it to a CSV file using the ``File/Save CSV`` option.
 
-It is often also often convenient to simply place the data onto the ``clipboard`` and paste it into an application like Microsoft Excel or Libre Office Calc.  The ``Clipboard/Comma Separated (CSV)`` or ``Clipboard/Tab Separated (Excel)`` are useful for that.
+It is often also convenient to simply place the data onto the ``clipboard`` and paste it into an application like Microsoft Excel or Libre Office Calc.  The ``Clipboard/Comma Separated (CSV)`` or ``Clipboard/Tab Separated (Excel)`` are useful for that.
 
 .. note::
 
