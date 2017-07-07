@@ -16,12 +16,12 @@ from digiplot.sample_img import TEST_IMAGE
 here = os.path.abspath(os.path.dirname(__file__))
 font_path = os.path.join( here, 'fonts', 'FreeSerifBoldItalic.ttf' )
 
-arial10  =  ImageFont.truetype ( font_path, 10 )
-arial16  =  ImageFont.truetype ( font_path, 16 )
-arial24  =  ImageFont.truetype ( font_path, 24 )
-arial36  =  ImageFont.truetype ( font_path, 36 )
-arial48  =  ImageFont.truetype ( font_path, 48 )
-arial72  =  ImageFont.truetype ( font_path, 72 )
+freefont10  =  ImageFont.truetype ( font_path, 10 )
+freefont16  =  ImageFont.truetype ( font_path, 16 )
+freefont24  =  ImageFont.truetype ( font_path, 24 )
+freefont36  =  ImageFont.truetype ( font_path, 36 )
+freefont48  =  ImageFont.truetype ( font_path, 48 )
+freefont72  =  ImageFont.truetype ( font_path, 72 )
 
 
 def clamp(n, minn, maxn):
@@ -63,6 +63,33 @@ class PlotArea(object):
         self.y_origin = 0.0 # units on the image plot
         self.xmax = 10.0 # units on the image plot
         self.ymax = 10.0 # units on the image plot
+        
+        self.log_x = False
+        self.log_y = False
+        
+        self.log10_x_origin = 1.0 # units on the image plot
+        self.log10_y_origin = 1.0 # units on the image plot
+        self.log10_xmax = 2.0 # units on the image plot
+        self.log10_ymax = 2.0 # units on the image plot
+        
+    def set_log_x(self):
+        self.log_x = True
+        if self.x_origin <= 0.0:
+            self.x_origin = 0.1
+        self.log10_x_origin = math.log10( self.x_origin )
+        
+    def set_linear_x(self):
+        self.log_x = False
+        
+    def set_log_y(self):
+        self.log_y = True
+        if self.y_origin <= 0.0:
+            self.y_origin = 0.1
+        self.log10_y_origin = math.log10( self.y_origin )
+        
+    def set_linear_y(self):
+        self.log_y = False
+
 
     def set_fraction_offset(self, fi=0.0, fj=0.0):
         
@@ -91,11 +118,31 @@ class PlotArea(object):
     def zoom_out(self, zoom_factor=0.1):
         self.set_zoom( self.img_zoom / (1.0 + zoom_factor))
         
+    def zoom_to_quadrant(self, qname='UL'):
         
+        x_zoom = float(self.w_canv) / float(self.w_img)
+        y_zoom = float(self.h_canv) / float(self.h_img)
+        self.img_zoom =  max(x_zoom, y_zoom) * 1.5
+        
+        qname = qname.upper()
+        if qname=='UL':
+            self.set_fraction_offset(fi=0.0, fj=0.0)
+        elif qname=='UR':
+            self.set_fraction_offset(fi=1.0, fj=0.0)
+        elif qname=='LR':
+            self.set_fraction_offset(fi=1.0, fj=1.0)
+        elif qname=='LL':
+            self.set_fraction_offset(fi=0.0, fj=1.0)
+        else:
+            self.fit_img_on_canvas()
 
     def zoom_into_ij(self,i,j, zoom_factor=0.1):
         fi = self.get_img_fi_from_canvas_i( i )
         fj = self.get_img_fj_from_canvas_j( j )
+        
+        #fi_max = self.get_img_fi_from_canvas_i( self.w_canv )
+        #fj_max = self.get_img_fj_from_canvas_j( self.h_canv )
+        #print('fi_max=%g,  fj_max=%g'%(fi_max, fj_max))
 
         # Want new fi, fj same as old values but with new zoom factor
         self.set_zoom( self.img_zoom * (1.0 + zoom_factor) )
@@ -140,13 +187,17 @@ class PlotArea(object):
             img =  Image.open(img_path)
             w_img, h_img = img.size
             print('Opened image file:',img_path,'  size=',img.size)
-            self.img = img
-            self.w_img = w_img
-            self.h_img = h_img
+            self.set_img( img )
+            return True
         except:
             print('==========> Error opening image file:',img_path)
             return False
-            
+    
+    def set_img(self, img):
+        
+        self.img = img
+        self.w_img, self.h_img = img.size
+        
         self.calc_nominal_zoom()
 
         self.fi_origin = 0.0
@@ -162,7 +213,14 @@ class PlotArea(object):
         self.xmax = 10.0 # units on the image plot
         self.ymax = 10.0 # units on the image plot
         
-        return True
+        self.log_x = False
+        self.log_y = False
+        
+        self.log10_x_origin = 1.0 # units on the image plot
+        self.log10_y_origin = 1.0 # units on the image plot
+        self.log10_xmax = 2.0 # units on the image plot
+        self.log10_ymax = 2.0 # units on the image plot
+        
     
     def get_zoomed_offset_img(self, greyscale=False, text=''):
         
@@ -189,22 +247,66 @@ class PlotArea(object):
         if greyscale:
             img_slice_resized =  img_slice_resized.convert('LA')
             
+        # place text onto plot
+        
+        # Make RGBA image to put text on
+        img_slice_resized =  img_slice_resized.convert('RGBA')
+        w,h = img_slice_resized.size
+        
+        d = max(w,h)
+        img_square = Image.new('RGBA', (d,d))
+        draw = ImageDraw.Draw(img_square)
+        
+        def get_font_for_size( s, w_lim ):
+            myfont = freefont10
+            for test_font in [freefont16, freefont24, freefont36, freefont48, freefont72]:
+                wtext, htext = test_font.getsize(s)
+                if wtext >= w_lim:
+                    return myfont
+                myfont = test_font
+            return myfont
+
+        # yaxis text
+        if self.log_y:
+            ylab = 'log scale'
+            color = (255,0,0,120) # red
+        else:
+            ylab = 'linear scale'
+            color = (0,255,0,120) # green
+        myfont = get_font_for_size( ylab, min(w,h)/2 )
+        di, dj = myfont.getsize(ylab)
+        itxt = (h-di)/2
+        draw.text( (itxt,d-dj),ylab, font=myfont, fill=color )
+        
+        # rotate image
+        img_new = img_square.rotate(270)
+        img_new = img_new.crop( (0,0, w,h) )
+        draw = ImageDraw.Draw(img_new)
+
+        # xaxis text
+        if self.log_x:
+            xlab = 'log scale'
+            color = (255,0,0,120) # red
+        else:
+            xlab = 'linear scale'
+            color = (0,255,0,120) # green
+        di, dj = myfont.getsize(xlab)
+        itxt = (w-di)/2
+        draw.text( (itxt,h-dj),xlab, font=myfont, fill=color )
+
+        # center text (if any)
         if text:
-            img_slice_resized =  img_slice_resized.convert('RGBA')
-            draw = ImageDraw.Draw(img_slice_resized)
-            w,h = img_slice_resized.size
-            
-            myfont = arial10
-            for test_font in [arial16, arial24, arial36, arial48, arial72]:
-                wtext, htext = test_font.getsize(text)
-                if wtext < w:
-                    myfont = test_font
+            myfont = get_font_for_size( text, w )
             di, dj = myfont.getsize(text)
             itxt = (w-di)/2
             jtxt = (h-dj)/2
             
-            draw.text( (itxt, jtxt), text, font=myfont, fill='magenta' )
+            draw.text( (itxt, jtxt), text, font=myfont, fill=(255,0,255,120) ) # magenta
+
             
+        #img_slice_resized = Image.blend(img_slice_resized, img_new, 0.5) 
+        img_slice_resized = Image.alpha_composite(img_slice_resized, img_new)
+
         return img_slice_resized
     
     def get_tk_photoimage(self, greyscale=False, text=''):
@@ -259,48 +361,79 @@ class PlotArea(object):
         self.fj_origin = self.get_img_fj_from_canvas_j( j )
         
     def set_origin_xy(self, x, y):
-        self.x_origin = x 
-        self.y_origin = y
-    
+        self.set_x_origin(x)
+        self.set_y_origin(y)
+        
     def set_x_origin(self, x):
-            self.x_origin = x
+        self.x_origin = x
+        if self.log_x and self.x_origin<=0.0:
+            self.x_origin = 0.1
+        if self.log_x:
+            self.log10_x_origin = math.log10( self.x_origin )
     
     def set_y_origin(self, y):
-            self.y_origin = y
+        self.y_origin = y
+        if self.log_y and self.y_origin<=0.0:
+            self.y_origin = 0.1
+        if self.log_y:
+            self.log10_y_origin = math.log10( self.y_origin )
     
     def set_x_max(self, x):
-            self.xmax = x
+        self.xmax = x
+        if self.log_x and self.xmax<=0.0:
+            self.xmax = 10.0
+        if self.log_x:
+            self.log10_xmax = math.log10( self.xmax )
     
     def set_y_max(self, y):
-            self.ymax = y
+        self.ymax = y
+        if self.log_y and self.ymax<=0.0:
+            self.ymax = 10.0
+        if self.log_y:
+            self.log10_ymax = math.log10( self.ymax )
     
     def set_ix_origin(self, i, x):
         self.fi_origin = self.get_img_fi_from_canvas_i( i )
-        self.x_origin = x
+        self.set_x_origin(x)
     
     def set_jy_origin(self, j, y):
         self.fj_origin = self.get_img_fj_from_canvas_j( j )
-        self.y_origin = y
+        self.set_y_origin(y)
     
     def set_imax_xmax(self, imax, xmax):
         self.fimax = self.get_img_fi_from_canvas_i( imax )
-        self.xmax = xmax
+        self.set_x_max( xmax )
     
     def set_jmax_ymax(self, jmax, ymax):
         self.fjmax = self.get_img_fj_from_canvas_j( jmax )
-        self.ymax = ymax
+        self.set_y_max( ymax )
     
     def get_xy_at_fifj(self, fi, fj):
     
         di = fi - self.fi_origin
         dj = self.fj_origin - fj # note LL vs UL
     
-        dx = self.xmax - self.x_origin
-        dy = self.ymax - self.y_origin
+        if self.log_x:
+            dx = self.log10_xmax - self.log10_x_origin
+        else:
+            dx = self.xmax - self.x_origin
+        
+        if self.log_y:
+            dy = self.log10_ymax - self.log10_y_origin
+        else:
+            dy = self.ymax - self.y_origin
     
         try:
-            x = self.x_origin + dx * di / (self.fimax - self.fi_origin)
-            y = self.y_origin + dy * dj / (self.fj_origin - self.fjmax) # note LL vs UL
+            if self.log_x:
+                x = 10.0**( self.log10_x_origin + dx * di / (self.fimax - self.fi_origin) )
+            else:
+                x = self.x_origin + dx * di / (self.fimax - self.fi_origin)
+            
+            if self.log_y:
+                y = 10.0**( self.log10_y_origin + dy * dj / (self.fj_origin - self.fjmax) ) # note LL vs UL
+            else:
+                y = self.y_origin + dy * dj / (self.fj_origin - self.fjmax) # note LL vs UL
+                
         except:
             return None, None
     
@@ -318,7 +451,11 @@ class PlotArea(object):
 
 
     def get_canvas_i(self, x_float):
-        fx = (x_float-self.x_origin) / (self.xmax-self.x_origin)
+        if self.log_x:
+            x10 = math.log10( x_float )
+            fx = (x10-self.log10_x_origin) / (self.log10_xmax-self.log10_x_origin)
+        else:
+            fx = (x_float-self.x_origin) / (self.xmax-self.x_origin)
         
         f_plot = self.fimax - self.fi_origin # fraction of canvas holding plot
         i_plot = fx * f_plot * self.w_img * self.img_zoom # i value into plot from origin
@@ -333,7 +470,11 @@ class PlotArea(object):
             return -1 # if not on canvas
         
     def get_canvas_j(self, y_float):
-        fy = (y_float-self.y_origin) / (self.ymax-self.y_origin)
+        if self.log_y:
+            y10 = math.log10( y_float )
+            fy = (y10-self.log10_y_origin) / (self.log10_ymax-self.log10_y_origin)
+        else:
+            fy = (y_float-self.y_origin) / (self.ymax-self.y_origin)
         
         f_plot = self.fj_origin - self.fjmax # fraction of canvas holding plot
         j_plot = fy * f_plot * self.h_img * self.img_zoom # i value into plot from origin

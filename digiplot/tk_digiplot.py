@@ -149,6 +149,20 @@ class DigiPlot(object):
         self.GreyScale_Checkbutton.configure(variable=self.GreyScale_Checkbutton_StringVar, onvalue="yes", offvalue="no")
         self.GreyScale_Checkbutton_StringVar_traceName = self.GreyScale_Checkbutton_StringVar.trace_variable("w", self.GreyScale_Checkbutton_StringVar_Callback)
 
+        self.LogX_Checkbutton = Checkbutton(right_frame_ch1,text="Log X Scale", width="15")
+        self.LogX_Checkbutton.pack(side=LEFT, anchor=W)
+        self.LogX_Checkbutton_StringVar = StringVar()
+        self.LogX_Checkbutton_StringVar.set('no')        
+        self.LogX_Checkbutton.configure(variable=self.LogX_Checkbutton_StringVar, onvalue="yes", offvalue="no")
+        self.LogX_Checkbutton_StringVar_traceName = self.LogX_Checkbutton_StringVar.trace_variable("w", self.LogX_Checkbutton_StringVar_Callback)
+
+        self.LogY_Checkbutton = Checkbutton(right_frame_ch1,text="Log Y Scale", width="15")
+        self.LogY_Checkbutton.pack(side=LEFT, anchor=W)
+        self.LogY_Checkbutton_StringVar = StringVar()
+        self.LogY_Checkbutton_StringVar.set('no')        
+        self.LogY_Checkbutton.configure(variable=self.LogY_Checkbutton_StringVar, onvalue="yes", offvalue="no")
+        self.LogY_Checkbutton_StringVar_traceName = self.LogY_Checkbutton_StringVar.trace_variable("w", self.LogY_Checkbutton_StringVar_Callback)
+
         
         self.MakeBigger_Button = Button(right_frame_ch1,text="+", width="5")
         self.MakeBigger_Button.pack(side=LEFT)
@@ -271,6 +285,12 @@ class DigiPlot(object):
         self.master.after(100, lambda: self.bindConfigure(None))
             
     def Initialize_Image_State(self):
+        
+        # Clear entries in Listbox
+        self.Defined_Points_Listbox.delete(0, END)
+        self.LogX_Checkbutton_StringVar.set('no')        
+        self.LogY_Checkbutton_StringVar.set('no')        
+        
         self.pointL = []
         self.has_some_new_data = False
         
@@ -280,10 +300,14 @@ class DigiPlot(object):
         self.canvas_tooltip_num = 0
         self.canvas_tooltip_inc = 1 # set > 1 to skip some options
         
+                                    
+        # Units NEED to be fraction of img
+        self.canvas_click_posL = [None, None, None, None] # only useful if all None's replaced
+        self.distortion_flag = False
         
+        self.PA.zoom_to_quadrant(qname='LL')
         self.plot_points()
         
-
     def Clear_Pending_Actions(self, event):
         self.statusMessage.set("Cleared pending actions.")
         self.is_dragging = False
@@ -319,6 +343,7 @@ class DigiPlot(object):
             #self.Plot_Canvas.config(width=600, height=500)
             self.master.bind("<Configure>", self.Master_Configure)
             
+            self.PA.zoom_to_quadrant(qname='LL')
             self.plot_points()
 
 
@@ -349,7 +374,10 @@ class DigiPlot(object):
         
         #print('self.frame.w =', self.frame.winfo_width())
         self.frame.update()
-        self.frame.update_idletasks()
+        #try:
+        #    self.frame.update_idletasks()
+        #except:
+        #    pass
         
         #dw = max(100, self.w - self.w_init + self.w_canv_init - 1)
         #dh = max(100, self.h - self.h_init + self.lb_init_height)
@@ -386,7 +414,7 @@ class DigiPlot(object):
         pcent_y_err = abs(y_err) * 100.0 / max( abs(self.PA.y_origin), abs(self.PA.ymax) )
         
         self.statusMessage.set("Distortion Error: Xerr=%g%%, Yerr=%g%%"%(pcent_x_err, pcent_y_err))
-        self.ShowWarning( title='Distortion Error', message="Xerr=%g%%, Yerr=%g%%"%(pcent_x_err, pcent_y_err))
+        #self.ShowWarning( title='Distortion Error', message="Xerr=%g%%, Yerr=%g%%"%(pcent_x_err, pcent_y_err))
         
         
     def plot_points(self):
@@ -496,7 +524,6 @@ class DigiPlot(object):
 
     def Canvas_Hover(self, event):
         
-        
         if self.canvas_tooltip_num >= len(self.canvas_tooltip_strL):
         
             x = int(event.x)
@@ -516,7 +543,6 @@ class DigiPlot(object):
         self.last_hover_pos = (event.x, event.y)
         self.plot_points()
             
-
 
     def Canvas_Begin_End_Drag(self, event):
         
@@ -617,14 +643,14 @@ class DigiPlot(object):
         self.statusMessage.set("called menu_File_Import_Image")
         
         if (len(self.pointL)>0) and self.has_some_new_data:
-            if self.AskYesNo( title='Current Data NOT Saved.', \
+            if not self.AskYesNo( title='Current Data NOT Saved.', \
                               message='Import New Image?\n'+\
                               '(Hit "Yes" to DISCARD your current data.)'):
                 return
         
         
         filetypes = [
-            ('PNG Image','*.png'),
+            ('Images','*.png;*.jpg;*.gif;*.jpeg'),
             ('Any File','*.*')]
         img_path = tkFileDialog.askopenfilename(parent=self.master,title='Open Image file', 
             filetypes=filetypes)
@@ -683,6 +709,15 @@ class DigiPlot(object):
         self.statusMessage.set( "====== Tab-Separated on Clipboard =========")
 
     def set_xy_min_max(self, tt_num):
+        
+        if tt_num==0:
+            self.PA.zoom_to_quadrant(qname='LL')
+        elif tt_num==1:
+            self.PA.zoom_to_quadrant(qname='LR')
+        elif tt_num==2:
+            self.PA.zoom_to_quadrant(qname='LL')
+        elif tt_num==3:
+            self.PA.zoom_to_quadrant(qname='UL')
         
         self.canvas_tooltip_num = tt_num
         self.canvas_tooltip_inc = 10
@@ -770,9 +805,22 @@ Esc Key = Clear Pending Actions
                     self.statusMessage.set("Ymax = %g"%result)
                     self.PA.set_jmax_ymax(event.y, result)
                     self.canvas_tooltip_num += self.canvas_tooltip_inc
+                    
+                    self.PA.fit_img_on_canvas()
             
             self.canvas_tooltip_inc = 1 # Just in case it is >1 for single options
-            
+
+        
+            if self.canvas_tooltip_num==0:
+                self.PA.zoom_to_quadrant(qname='LL')
+            elif self.canvas_tooltip_num==1:
+                self.PA.zoom_to_quadrant(qname='LR')
+            elif self.canvas_tooltip_num==2:
+                self.PA.zoom_to_quadrant(qname='LL')
+            elif self.canvas_tooltip_num==3:
+                self.PA.zoom_to_quadrant(qname='UL')
+
+
             if not None in self.canvas_click_posL:
                 self.eval_distortion()
             
@@ -800,6 +848,28 @@ Esc Key = Clear Pending Actions
     def GreyScale_Checkbutton_StringVar_Callback(self, varName, index, mode):
         self.statusMessage.set("    GreyScale_Checkbutton_StringVar = "+self.GreyScale_Checkbutton_StringVar.get())
         #print "    new StringVar value =",self.GreyScale_Checkbutton_StringVar.get()
+        self.plot_points()
+
+    def LogX_Checkbutton_StringVar_Callback(self, varName, index, mode):
+        self.statusMessage.set("    LogX_Checkbutton_StringVar = "+self.LogX_Checkbutton_StringVar.get())
+        
+        is_log = str(self.LogX_Checkbutton_StringVar.get())=='yes'
+        if is_log:
+            self.PA.set_log_x()
+        else:
+            self.PA.set_linear_x()
+            
+        self.plot_points()
+
+    def LogY_Checkbutton_StringVar_Callback(self, varName, index, mode):
+        self.statusMessage.set("    LogY_Checkbutton_StringVar = "+self.LogY_Checkbutton_StringVar.get())
+        
+        is_log = str(self.LogY_Checkbutton_StringVar.get())=='yes'
+        if is_log:
+            self.PA.set_log_y()
+        else:
+            self.PA.set_linear_y()
+            
         self.plot_points()
 
 
