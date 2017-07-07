@@ -51,7 +51,8 @@ from tkinter import Menu, StringVar, Label, SUNKEN, SW, X, BOTTOM, Frame, NE, NW
     Canvas, Listbox, Entry, N, S, E, W, YES, Toplevel, ALL, Checkbutton
 
 from PIL import Image, ImageTk
-from digiplot.plot_area import PlotArea        
+from digiplot.plot_area import PlotArea
+from digiplot.realign_Dialog import _ReAlign
 
 # for multi-file projects see LICENSE file for authorship info
 # for single file projects, insert following information
@@ -222,6 +223,11 @@ class DigiPlot(object):
         top_Anchor_Plot.add("command", label = "Set Ymax", command = self.menu_Anchor_Plot_Set_Ymax)
         top_Anchor_Plot.add("command", label = "Set All", command = self.menu_Anchor_Plot_Set_All)
         self.menuBar.add("cascade", label="Anchor Plot", menu=top_Anchor_Plot)
+
+
+        top_Fix = Menu(self.menuBar, tearoff=0)
+        top_Fix.add("command", label = "Align Image Axes", command = self.menu_Fix_Image)
+        self.menuBar.add("cascade", label="Fix Image", menu=top_Fix)
 
 
         top_View = Menu(self.menuBar, tearoff=0)
@@ -432,7 +438,8 @@ class DigiPlot(object):
             tt_str = ''
         
         greyscale = str(self.GreyScale_Checkbutton_StringVar.get())=='yes'
-        self.photo_image = self.PA.get_tk_photoimage(greyscale=greyscale, text=tt_str)
+        self.photo_image = self.PA.get_tk_photoimage(greyscale=greyscale, text=tt_str, 
+                                                     show_linlog_text=True)
         self.Plot_Canvas.create_image(0,0, anchor=NW, image=self.photo_image )
                     
         iL = [i for i in self.Defined_Points_Listbox.curselection()]
@@ -657,7 +664,10 @@ class DigiPlot(object):
             
         if img_path:
             if self.PA.open_img_file( img_path ):
+                head,fName = os.path.split( img_path )
+                self.master.title("DigiPlot: %s"%fName)
                 self.Initialize_Image_State()
+                self.statusMessage.set('file "%s" opened'%fName)
             
 
 
@@ -750,6 +760,17 @@ class DigiPlot(object):
     def menu_Fit_Image(self):
         self.PA.fit_img_on_canvas()
         self.plot_points()
+
+    def menu_Fix_Image(self):
+        dialog = _ReAlign(self.master, "Re-Align Plot Axes (Make Orthogonal)",dialogOptions={'img':self.PA.img})
+        if dialog.result is not None:
+            self.PA.set_img( dialog.result["img_fixed"] )
+            
+            self.master.title("DigiPlot: Re-Aligned Image")
+            self.Initialize_Image_State()
+            self.statusMessage.set('Re-Aligned Image')
+            
+        dialog.destroy()
 
     def menu_Help(self):
         self.statusMessage.set("called menu_Help")

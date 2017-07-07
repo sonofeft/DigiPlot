@@ -9,16 +9,19 @@ if sys.version_info < (3,):
     from future import standard_library
     standard_library.install_aliases()
     from tkSimpleDialog import Dialog
+    import tkMessageBox
 else:
     # this is only called incorrectly by pylint using python2
     from tkinter.simpledialog import Dialog
-    
+    import tkinter.messagebox as tkMessageBox
+
+
 from tkinter import *
 
 # Import Pillow:
 from PIL import Image, ImageTk
 
-from fix_distortion import fix_plot_img
+from digiplot.fix_distortion import fix_plot_img
 from digiplot.plot_area import PlotArea        
 
 class _Dialog(Dialog):
@@ -38,10 +41,6 @@ class _ReAlign(_Dialog):
         dialogframe = Frame(body, width=663, height=627)
         dialogframe.pack(fill=BOTH, expand=YES, side=TOP)
         self.dialogframe = dialogframe
-
-        self.Button_1 = Button(dialogframe,text="Button_1 text", width="15")
-        self.Button_1.pack(fill=X, expand=YES, side=TOP)
-        self.Button_1.bind("<ButtonRelease-1>", self.Button_1_Click)
 
         lbframe = Frame( dialogframe )
         self.Canvas_1_frame = lbframe
@@ -93,9 +92,20 @@ class _ReAlign(_Dialog):
 
         self.last_hover_pos = (0,0)
         self.in_canvas = False
-    
+
+        self.canvas_tooltip_num = 0
+        self.canvas_tooltip_inc = 1 # set > 1 to skip some options
+        self.canvas_tooltip_strL = ['Left Click Upper Left.', 'Left Click Upper Right',
+                                    'Left Click Lower Right.', 'Left Click Lower Left']
+        # Units NEED to be fraction of img
+        self.canvas_click_posL = [None, None, None, None] # only useful if all None's replaced
+        
+        self.is_first_display = True
+        self.all_done = False
+        
+
     def Key_Actions(self, event):
-        print('event.char =',event.char)
+        #print('event.char =',event.char)
         if event.char=='1':
             self.PA.zoom_to_quadrant(qname='UL')
         elif event.char=='2':
@@ -108,22 +118,36 @@ class _ReAlign(_Dialog):
         self.fill_canvas()
 
     def MakeBigger(self, event):
-        print('MakeBigger')
+        #print('MakeBigger')
         self.PA.zoom_in(zoom_factor=0.1)
         self.fill_canvas()
         
     def MakeSmaller(self, event):
-        print('MakeSmaller')
+        #print('MakeSmaller')
         self.PA.zoom_out(zoom_factor=0.1)
         self.fill_canvas()
 
     def fill_canvas(self):
+        if self.all_done:
+            return
         
+        if self.is_first_display:
+            self.PA.zoom_to_quadrant(qname='UL')
+            self.is_first_display = False
         
         # make coordinate axes
-        self.Canvas_1.delete("all")
+        try:
+            self.Canvas_1.delete("all")
+        except:
+            pass
         
-        self.photo_image = self.PA.get_tk_photoimage(greyscale=True, text='')
+        # Place click directions onto canvas
+        if self.canvas_tooltip_num < len(self.canvas_tooltip_strL):
+            tt_str = self.canvas_tooltip_strL[ self.canvas_tooltip_num ]
+        else:
+            tt_str = ''
+        
+        self.photo_image = self.PA.get_tk_photoimage(greyscale=True, text=tt_str)
         self.Canvas_1.create_image(0,0, anchor=NW, image=self.photo_image )
         
 
@@ -132,7 +156,7 @@ class _ReAlign(_Dialog):
             x,y = self.last_hover_pos
             self.Canvas_1.create_line(x, 0, x, self.PA.h_canv, fill="magenta", width=3, dash=(5,) )
             self.Canvas_1.create_line(0, y, self.PA.w_canv, y, fill="magenta", width=3, dash=(5,) )
-        
+
         
 
     def Canvas_1_Resize(self, event):
@@ -179,6 +203,8 @@ class _ReAlign(_Dialog):
     def Canvas_Enter(self, event):
         self.in_canvas = True
         self.fill_canvas()
+                
+        
     def Canvas_Leave(self, event):
         self.in_canvas = False
         self.fill_canvas()
@@ -190,51 +216,95 @@ class _ReAlign(_Dialog):
         self.fill_canvas()
             
 
-    # tk_happy generated code. DO NOT EDIT THE FOLLOWING. section "compID=1"
-    def Button_1_Click(self, event): #click method for component ID=1
-        pass
-        # >>>>>>insert any user code below this comment for section "compID=1"
-        # replace, delete, or comment-out the following
-        print( "executed method Button_1_Click")
-
     # tk_happy generated code. DO NOT EDIT THE FOLLOWING. section "compID=2"
     def Canvas_1_Click(self, event): #click method for component ID=2
         pass
         # >>>>>>insert any user code below this comment for section "compID=2"
         # replace, delete, or comment-out the following
-        print("executed method Canvas_1_Click")
-        print("clicked in canvas at x,y =",event.x,event.y)
+        #print("executed method Canvas_1_Click")
+        #print("clicked in canvas at x,y =",event.x,event.y)
         #w = int(self.Canvas_1.cget("width"))
         #h = int(self.Canvas_1.cget("height"))
         
         w = int(self.Canvas_1.winfo_width())
         h = int(self.Canvas_1.winfo_height())
+
+        if self.canvas_tooltip_num < len(self.canvas_tooltip_strL):
+            tt_str = self.canvas_tooltip_strL[ self.canvas_tooltip_num ]
+            
+            # For Now, units are fi,fj
+            fi, fj = self.PA.get_fifj_at_ij(event.x, event.y)
+            self.canvas_click_posL[self.canvas_tooltip_num] = \
+                        (self.PA.get_img_i_from_img_fi(fi),  \
+                         self.PA.get_img_j_from_img_fj(fj) )
+            
+            if self.canvas_tooltip_num==0:
+                self.title("Upper Left = " + str(self.canvas_click_posL[self.canvas_tooltip_num]))
+                self.canvas_tooltip_num += self.canvas_tooltip_inc
+                
+            elif self.canvas_tooltip_num==1:
+                self.title("Upper Right = " + str(self.canvas_click_posL[self.canvas_tooltip_num]))
+                self.canvas_tooltip_num += self.canvas_tooltip_inc
+                
+            elif self.canvas_tooltip_num==2:
+                self.title("Lower Right = " + str(self.canvas_click_posL[self.canvas_tooltip_num]))
+                self.canvas_tooltip_num += self.canvas_tooltip_inc
+                
+            elif self.canvas_tooltip_num==3:
+                self.title("Lower Left = " + str(self.canvas_click_posL[self.canvas_tooltip_num]))
+                self.canvas_tooltip_num += self.canvas_tooltip_inc
+                    
+                
+            
+            self.canvas_tooltip_inc = 1 # Just in case it is >1 for single options
+
         
-        self.Canvas_1.create_rectangle((2, 2, w+1, h+1), outline="blue")
-        self.Canvas_1.create_line(0, 0, w+2, h+2, fill="red")
-        x = int(event.x)
-        y = int(event.y)
-        print("event x,y=",x,y)
-        self.Canvas_1.create_text(x,y, text="NE", fill="green", anchor=NE)
-        self.Canvas_1.create_text(x,y, text="SW", fill="magenta", anchor=SW)
+            if self.canvas_tooltip_num==0:
+                self.PA.zoom_to_quadrant(qname='UL')
+            elif self.canvas_tooltip_num==1:
+                self.PA.zoom_to_quadrant(qname='UR')
+            elif self.canvas_tooltip_num==2:
+                self.PA.zoom_to_quadrant(qname='LR')
+            elif self.canvas_tooltip_num==3:
+                self.PA.zoom_to_quadrant(qname='LL')
+            else:
+                self.PA.fit_img_on_canvas()
+
+
+            if not None in self.canvas_click_posL:
+                UL, UR, LR, LL = self.canvas_click_posL
+                #print('UL, UR, LR, LL =',UL, UR, LR, LL)
+                self.img_fixed = fix_plot_img( UL, UR, LR, LL, self.PA.img)
+                self.PA.set_img( self.img_fixed )
+                
+                self.ShowInfo( title='Image Is Realigned', message='''Use Cross-Hairs to examine orthogonality
+                If satisfied, hit "OK" button on main screen.''')
+                
+            
+            self.fill_canvas()
+                
+
+    # standard message dialogs... showinfo, showwarning, showerror
+    def ShowInfo(self, title='Title', message='your message here.'):
+        tkMessageBox.showinfo( title, message )
+        return
+        
 
     # tk_happy generated code. DO NOT EDIT THE FOLLOWING. section "dialog_validate"
     def validate(self):
         self.result = {} # return a dictionary of results
-    
-        # >>>>>>insert any user code below this comment for section "dialog_validate"
-        # set values in "self.result" dictionary for return
-        # for example...
-        # self.result["age"] = self.Entry_2_StringVar.get() 
-
-
-        self.result["test"] = "test message" 
+        
+        #self.Canvas_1.unbind_all('<Key>')
+        self.all_done = True
+        
+        self.result["img_fixed"] = self.img_fixed.copy()
         return 1
 # tk_happy generated code. DO NOT EDIT THE FOLLOWING. section "end"
 
 
     def apply(self):
-        print('apply called')
+        #print('apply called')
+        pass
 
 class _Testdialog:
     def __init__(self, master):

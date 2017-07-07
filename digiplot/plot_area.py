@@ -222,7 +222,7 @@ class PlotArea(object):
         self.log10_ymax = 2.0 # units on the image plot
         
     
-    def get_zoomed_offset_img(self, greyscale=False, text=''):
+    def get_zoomed_offset_img(self, greyscale=False, text='', show_linlog_text=False):
         
         fi_min = max(0.0, self.get_img_fi_from_canvas_i( 0 ))
         fi_max = min(1.0, self.get_img_fi_from_canvas_i( self.w_canv ))
@@ -248,69 +248,72 @@ class PlotArea(object):
             img_slice_resized =  img_slice_resized.convert('LA')
             
         # place text onto plot
-        
-        # Make RGBA image to put text on
-        img_slice_resized =  img_slice_resized.convert('RGBA')
-        w,h = img_slice_resized.size
-        
-        d = max(w,h)
-        img_square = Image.new('RGBA', (d,d))
-        draw = ImageDraw.Draw(img_square)
-        
-        def get_font_for_size( s, w_lim ):
-            myfont = freefont10
-            for test_font in [freefont16, freefont24, freefont36, freefont48, freefont72]:
-                wtext, htext = test_font.getsize(s)
-                if wtext >= w_lim:
-                    return myfont
-                myfont = test_font
-            return myfont
-
-        # yaxis text
-        if self.log_y:
-            ylab = 'log scale'
-            color = (255,0,0,120) # red
-        else:
-            ylab = 'linear scale'
-            color = (0,255,0,120) # green
-        myfont = get_font_for_size( ylab, min(w,h)/2 )
-        di, dj = myfont.getsize(ylab)
-        itxt = (h-di)/2
-        draw.text( (itxt,d-dj),ylab, font=myfont, fill=color )
-        
-        # rotate image
-        img_new = img_square.rotate(270)
-        img_new = img_new.crop( (0,0, w,h) )
-        draw = ImageDraw.Draw(img_new)
-
-        # xaxis text
-        if self.log_x:
-            xlab = 'log scale'
-            color = (255,0,0,120) # red
-        else:
-            xlab = 'linear scale'
-            color = (0,255,0,120) # green
-        di, dj = myfont.getsize(xlab)
-        itxt = (w-di)/2
-        draw.text( (itxt,h-dj),xlab, font=myfont, fill=color )
-
-        # center text (if any)
-        if text:
-            myfont = get_font_for_size( text, w )
-            di, dj = myfont.getsize(text)
-            itxt = (w-di)/2
-            jtxt = (h-dj)/2
+        if text or show_linlog_text:
+            # Make RGBA image to put text on
+            img_slice_resized =  img_slice_resized.convert('RGBA')
+            w,h = img_slice_resized.size
             
-            draw.text( (itxt, jtxt), text, font=myfont, fill=(255,0,255,120) ) # magenta
-
+            d = max(w,h)
+            img_square = Image.new('RGBA', (d,d))
+            draw = ImageDraw.Draw(img_square)
             
-        #img_slice_resized = Image.blend(img_slice_resized, img_new, 0.5) 
-        img_slice_resized = Image.alpha_composite(img_slice_resized, img_new)
+            def get_font_for_size( s, w_lim ):
+                myfont = freefont10
+                for test_font in [freefont16, freefont24, freefont36, freefont48, freefont72]:
+                    wtext, htext = test_font.getsize(s)
+                    if wtext >= w_lim:
+                        return myfont
+                    myfont = test_font
+                return myfont
+
+            # yaxis text
+            if show_linlog_text:
+                if self.log_y:
+                    ylab = 'log scale'
+                    color = (255,0,0,120) # red
+                else:
+                    ylab = 'linear scale'
+                    color = (0,255,0,120) # green
+                myfont = get_font_for_size( 'logear scale', min(w,h)/2 )
+                di, dj = myfont.getsize(ylab)
+                itxt = (h-di)/2
+                draw.text( (itxt,d-dj),ylab, font=myfont, fill=color )
+            
+            # rotate image
+            img_temp = img_square.rotate(270)
+            img_new = img_temp.crop( (0,0, w,h) )
+            draw = ImageDraw.Draw(img_new)
+
+            # xaxis text
+            if show_linlog_text:
+                if self.log_x:
+                    xlab = 'log scale'
+                    color = (255,0,0,120) # red
+                else:
+                    xlab = 'linear scale'
+                    color = (0,255,0,120) # green
+                di, dj = myfont.getsize(xlab)
+                itxt = (w-di)/2
+                draw.text( (itxt,h-dj),xlab, font=myfont, fill=color )
+
+            # center text (if any)
+            if text:
+                myfont = get_font_for_size( text, w )
+                di, dj = myfont.getsize(text)
+                itxt = (w-di)/2
+                jtxt = (h-dj)/2
+                
+                draw.text( (itxt, jtxt), text, font=myfont, fill=(255,0,255,120) ) # magenta
+
+                
+            #img_slice_resized = Image.blend(img_slice_resized, img_new, 0.5) 
+            img_slice_resized = Image.alpha_composite(img_slice_resized, img_new)
 
         return img_slice_resized
     
-    def get_tk_photoimage(self, greyscale=False, text=''):
-        img_slice_resized = self.get_zoomed_offset_img(greyscale=greyscale, text=text)
+    def get_tk_photoimage(self, greyscale=False, text='', show_linlog_text=False):
+        img_slice_resized = self.get_zoomed_offset_img(greyscale=greyscale, text=text, 
+                                                       show_linlog_text=show_linlog_text)
         return ImageTk.PhotoImage( img_slice_resized )
     
         
@@ -318,6 +321,12 @@ class PlotArea(object):
     #    i_zoom = self.w_img * self.fi_offset * self.img_zoom + i
     #    i_zoom_max = self.w_img * self.img_zoom
     #    return float(i_zoom) / float(i_zoom_max)
+
+    def get_img_i_from_img_fi(self, fi):
+        return self.w_img * fi
+    def get_img_j_from_img_fj(self, fj):
+        return self.h_img * fj
+
 
     def get_canvas_i_from_img_fi(self, fi):
         i_off_screen = self.w_img * self.fi_offset
@@ -509,7 +518,7 @@ if __name__ == '__main__':
     #PA.set_fraction_offset(fi=0.2, fj=0.3)
     #PA.zoom_out(zoom_factor=0.5)
     
-    img_slice_resized = PA.get_zoomed_offset_img(greyscale=True)
+    img_slice_resized = PA.get_zoomed_offset_img(greyscale=True, show_linlog_text=True)
     print('img_slice_resized.size=',img_slice_resized.size)
     img_slice_resized.save('test_img.png')
     
@@ -543,5 +552,5 @@ if __name__ == '__main__':
         print()
         print( 'x,y at 481,0 =',PA.get_xy_at_ij(481,0) )
 
-        img_slice_resized = PA.get_zoomed_offset_img(greyscale=True)
+        img_slice_resized = PA.get_zoomed_offset_img(greyscale=True, show_linlog_text=True)
         img_slice_resized.save('test_offset_img.png')
