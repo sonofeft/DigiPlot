@@ -100,6 +100,9 @@ class _ReAlign(_Dialog):
         # Units NEED to be fraction of img
         self.canvas_click_posL = [None, None, None, None] # only useful if all None's replaced
         
+        if self.dialogOptions.get('use_3_point',False):
+            self.canvas_click_posL[1] = (1000, 1000)
+        
         self.is_first_display = True
         self.all_done = False
         
@@ -242,6 +245,9 @@ class _ReAlign(_Dialog):
                 self.title("Upper Left = " + str(self.canvas_click_posL[self.canvas_tooltip_num]))
                 self.canvas_tooltip_num += self.canvas_tooltip_inc
                 
+                if self.dialogOptions.get('use_3_point',False):
+                    self.canvas_tooltip_num += self.canvas_tooltip_inc
+                
             elif self.canvas_tooltip_num==1:
                 self.title("Upper Right = " + str(self.canvas_click_posL[self.canvas_tooltip_num]))
                 self.canvas_tooltip_num += self.canvas_tooltip_inc
@@ -273,6 +279,13 @@ class _ReAlign(_Dialog):
 
             if not None in self.canvas_click_posL:
                 UL, UR, LR, LL = self.canvas_click_posL
+                
+                # May need to assume that UR is assumed to be a rotation
+                if self.dialogOptions.get('use_3_point',False):
+                    di = LR[0] - LL[0]
+                    dj = LR[1] - LL[1]
+                    UR = (UL[0]+di, UL[1]+dj)
+                
                 #print('UL, UR, LR, LL =',UL, UR, LR, LL)
                 self.img_fixed = fix_plot_img( UL, UR, LR, LL, self.PA.img)
                 self.PA.set_img( self.img_fixed )
@@ -320,8 +333,9 @@ class _Testdialog:
     def Button_1_Click(self, event): #click method for component ID=1
 
         # Load the original image:
-        img = Image.open("rot_poly_m3.jpg")
-        dialogOptions = {'img':img}
+        #img = Image.open("rot_poly_m3.jpg")
+        img = Image.open("Tank_ExpEff_3Point.jpg")
+        dialogOptions = {'img':img, 'use_3_point':True}
         
         dialog = _ReAlign(self.master, "Test Dialog",dialogOptions=dialogOptions)
         print('===============Result from Dialog====================')

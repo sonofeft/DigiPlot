@@ -16,6 +16,7 @@ Contents:
 
    quickstart
    examples
+   realign
    copyright
    authors
    history

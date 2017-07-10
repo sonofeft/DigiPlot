@@ -192,6 +192,8 @@ class DigiPlot(object):
         self.Plot_Canvas.bind("<Motion>", self.Canvas_Hover)
         self.Plot_Canvas.bind("<Enter>", self.Canvas_Enter)
         self.Plot_Canvas.bind("<Leave>", self.Canvas_Leave)
+        
+        self.Plot_Canvas.bind('<Control-v>', self.menu_Paste_Clipboard_Image_event)
 
         # ======================  End of Widget Frame =============
         # make a Status Bar
@@ -206,15 +208,16 @@ class DigiPlot(object):
 
         top_File = Menu(self.menuBar, tearoff=0)
 
-        top_File.add("command", label = "Import Image", command = self.menu_File_Import_Image)
-        top_File.add("command", label = "Save CSV", command = self.menu_File_Save_CSV)
+        top_File.add("command", label = "Read Image File", command = self.menu_File_Import_Image)
+        top_File.add("command", label = "Paste Clipboard Image", command = self.menu_Paste_Clipboard_Image)
+        top_File.add("command", label = "Save Points to CSV", command = self.menu_File_Save_CSV)
         self.menuBar.add("cascade", label="File", menu=top_File)
 
 
         top_Clipboard = Menu(self.menuBar, tearoff=0)
         top_Clipboard.add("command", label = "Comma Separated (CSV)", command = self.menu_Clipboard_Comma)
         top_Clipboard.add("command", label = "Tab Separated (Excel)", command = self.menu_Clipboard_Tab)
-        self.menuBar.add("cascade", label="Clipboard", menu=top_Clipboard)
+        self.menuBar.add("cascade", label="Data-To-Clipboard", menu=top_Clipboard)
 
         top_Anchor_Plot = Menu(self.menuBar, tearoff=0)
         top_Anchor_Plot.add("command", label = "Set Xmin", command = self.menu_Anchor_Plot_Set_Xmin)
@@ -222,12 +225,13 @@ class DigiPlot(object):
         top_Anchor_Plot.add("command", label = "Set Ymin", command = self.menu_Anchor_Plot_Set_Ymin)
         top_Anchor_Plot.add("command", label = "Set Ymax", command = self.menu_Anchor_Plot_Set_Ymax)
         top_Anchor_Plot.add("command", label = "Set All", command = self.menu_Anchor_Plot_Set_All)
-        self.menuBar.add("cascade", label="Anchor Plot", menu=top_Anchor_Plot)
+        self.menuBar.add("cascade", label="Anchor-Plot", menu=top_Anchor_Plot)
 
 
         top_Fix = Menu(self.menuBar, tearoff=0)
-        top_Fix.add("command", label = "Align Image Axes", command = self.menu_Fix_Image)
-        self.menuBar.add("cascade", label="Fix Image", menu=top_Fix)
+        top_Fix.add("command", label = "4 Point Axes Align", command = self.menu_Fix_Image_4Pt)
+        top_Fix.add("command", label = "3 Point Axes Align", command = self.menu_Fix_Image_3Pt)
+        self.menuBar.add("cascade", label="Fix-Image-Alignment", menu=top_Fix)
 
 
         top_View = Menu(self.menuBar, tearoff=0)
@@ -646,6 +650,22 @@ class DigiPlot(object):
             
         self.plot_points()
 
+    def menu_Paste_Clipboard_Image_event(self, event):
+        self.menu_Paste_Clipboard_Image()
+
+    def menu_Paste_Clipboard_Image(self):
+        self.statusMessage.set("Pasting Image from Clipboard")
+        
+        if self.PA.set_img_from_clipboard():
+            self.master.title("DigiPlot: Pasted Clipboard Image")
+            self.Initialize_Image_State()
+            
+            self.statusMessage.set("SUCCESS... Pasted Image from Clipboard")
+        else:
+            self.statusMessage.set("FAILED... Pasting Image from Clipboard")
+            self.ShowWarning(title='Clipboard Image Paste Failed', message='Clipboard Image Paste Failed.')
+        
+
     def menu_File_Import_Image(self):
         self.statusMessage.set("called menu_File_Import_Image")
         
@@ -761,8 +781,21 @@ class DigiPlot(object):
         self.PA.fit_img_on_canvas()
         self.plot_points()
 
-    def menu_Fix_Image(self):
-        dialog = _ReAlign(self.master, "Re-Align Plot Axes (Make Orthogonal)",dialogOptions={'img':self.PA.img})
+    def menu_Fix_Image_4Pt(self):
+        dialog = _ReAlign(self.master, "4 Point Re-Align Plot Axes (Make Orthogonal)",\
+                          dialogOptions={'img':self.PA.img})
+        if dialog.result is not None:
+            self.PA.set_img( dialog.result["img_fixed"] )
+            
+            self.master.title("DigiPlot: Re-Aligned Image")
+            self.Initialize_Image_State()
+            self.statusMessage.set('Re-Aligned Image')
+            
+        dialog.destroy()
+
+    def menu_Fix_Image_3Pt(self):
+        dialog = _ReAlign(self.master, "3 Point Re-Align Plot Axes (Make Orthogonal)",\
+                          dialogOptions={'img':self.PA.img, 'use_3_point':True})
         if dialog.result is not None:
             self.PA.set_img( dialog.result["img_fixed"] )
             

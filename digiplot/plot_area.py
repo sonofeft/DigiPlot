@@ -6,6 +6,8 @@ from __future__ import print_function
 import math
 import sys
 from PIL import Image, ImageTk, ImageFont, ImageDraw
+from PIL import ImageGrab
+
 if sys.version_info < (3,):
     from cStringIO import StringIO
 else:
@@ -191,6 +193,15 @@ class PlotArea(object):
             return True
         except:
             print('==========> Error opening image file:',img_path)
+            return False
+    
+    def set_img_from_clipboard(self):
+        img = ImageGrab.grabclipboard()
+        if isinstance(img, Image.Image):
+            self.set_img( img )
+            return True
+        else:
+            print('WARNING... Pasting Clipboard Image Failed.')
             return False
     
     def set_img(self, img):
