@@ -6,7 +6,12 @@ from __future__ import print_function
 import math
 import sys
 from PIL import Image, ImageTk, ImageFont, ImageDraw
-from PIL import ImageGrab
+
+try:
+    from PIL import ImageGrab
+    HAS_IMAGEGRAB = True
+except:
+    HAS_IMAGEGRAB = False
 
 if sys.version_info < (3,):
     from cStringIO import StringIO
@@ -196,6 +201,10 @@ class PlotArea(object):
             return False
     
     def set_img_from_clipboard(self):
+        if not HAS_IMAGEGRAB:
+            return False
+        
+        
         img = ImageGrab.grabclipboard()
         if isinstance(img, Image.Image):
             self.set_img( img )
