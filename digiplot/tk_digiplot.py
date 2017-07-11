@@ -51,7 +51,7 @@ from tkinter import Menu, StringVar, Label, SUNKEN, SW, X, BOTTOM, Frame, NE, NW
     Canvas, Listbox, Entry, N, S, E, W, YES, Toplevel, ALL, Checkbutton
 
 from PIL import Image, ImageTk
-from digiplot.plot_area import PlotArea
+from digiplot.plot_area import PlotArea, HAS_IMAGEGRAB
 from digiplot.realign_Dialog import _ReAlign
 
 # for multi-file projects see LICENSE file for authorship info
@@ -193,7 +193,8 @@ class DigiPlot(object):
         self.Plot_Canvas.bind("<Enter>", self.Canvas_Enter)
         self.Plot_Canvas.bind("<Leave>", self.Canvas_Leave)
         
-        self.Plot_Canvas.bind('<Control-v>', self.menu_Paste_Clipboard_Image_event)
+        if HAS_IMAGEGRAB:
+            self.Plot_Canvas.bind('<Control-v>', self.menu_Paste_Clipboard_Image_event)
 
         # ======================  End of Widget Frame =============
         # make a Status Bar
@@ -209,7 +210,8 @@ class DigiPlot(object):
         top_File = Menu(self.menuBar, tearoff=0)
 
         top_File.add("command", label = "Read Image File", command = self.menu_File_Import_Image)
-        top_File.add("command", label = "Paste Clipboard Image", command = self.menu_Paste_Clipboard_Image)
+        if HAS_IMAGEGRAB:
+            top_File.add("command", label = "Paste Clipboard Image", command = self.menu_Paste_Clipboard_Image)
         top_File.add("command", label = "Save Points to CSV", command = self.menu_File_Save_CSV)
         self.menuBar.add("cascade", label="File", menu=top_File)
 
