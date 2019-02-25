@@ -106,22 +106,28 @@ class DigiPlot(object):
         
         # ------------ left_frame -----------------
         left_frame = Frame(self.frame)
-        left_frame.pack(fill=Y,  side=LEFT, anchor=NW)
 
         #self.Defined_Points_Label = Label(left_frame,text="Defined Points", width="15")
         #self.Defined_Points_Label.pack(anchor=NW, side=TOP)
         
         left_frame_ch1 = Frame(left_frame)
-        left_frame_ch1.pack(fill=Y,  side=TOP, anchor=NW)
         
         self.Del_Button = Button(left_frame_ch1,text="Delete Point", width="10")
         self.Del_Button.pack(side=LEFT, anchor=NW)
         self.Del_Button.bind("<ButtonRelease-1>", self.Del_Button_Click)
         
-        self.Sort_Button = Button(left_frame_ch1,text="Sort By X", width="10")
+        self.Sort_Button = Button(left_frame_ch1,text="Sort By X", width="9")
         self.Sort_Button.pack(side=LEFT, anchor=NW)
         self.Sort_Button.bind("<ButtonRelease-1>", self.Sort_Button_Click)
+
         
+        self.Delete_All_Button = Button(left_frame_ch1,text="Delete All", width="10")
+        self.Delete_All_Button.pack(side=LEFT, anchor=NW)
+        self.Delete_All_Button.bind("<ButtonRelease-1>", self.Delete_All_Button_Click)
+        
+        left_frame_ch1.pack(fill=Y,  side=TOP, anchor=NW)
+
+
         # Listbox for points
         lbframe = Frame( left_frame )
         scrollbar = Scrollbar(lbframe, orient=VERTICAL)
@@ -134,6 +140,7 @@ class DigiPlot(object):
         self.Defined_Points_Listbox_frame = lbframe
         self.Defined_Points_Listbox.bind("<ButtonRelease-1>", self.Defined_Points_Listbox_Click)
         
+        left_frame.pack(fill=Y,  side=LEFT, anchor=NW)
 
         # -------------------- right_frame -------------------
         # Canvas for plot
@@ -292,7 +299,7 @@ class DigiPlot(object):
                     self.statusMessage.set('file "%s" not found'%fName)
         
         
-        
+        self.master.update_idletasks()
         # give a few milliseconds before calling bindConfigure
         self.master.after(100, lambda: self.bindConfigure(None))
             
@@ -608,6 +615,19 @@ class DigiPlot(object):
         
         self.Defined_Points_Listbox.select_set( END )
         self.plot_points()
+    
+    def Delete_All_Button_Click(self, event):
+        if self.AskOK_Cancel( title='Delete All Data Points?', 
+                              message='Are you sure you want to delete ALL data points?'):
+                                  
+            self.Defined_Points_Listbox.delete(0, END)            
+            self.pointL = []
+            self.has_some_new_data = False
+            self.plot_points()
+            
+            self.statusMessage.set("Deleted All Data Points.")
+        else:
+            self.statusMessage.set("Cancelled Delete.")
     
     def Del_Button_Click(self, event):
         

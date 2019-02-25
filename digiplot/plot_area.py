@@ -43,7 +43,7 @@ class PlotArea(object):
     """
     Logic for interpreting a plot image on a display canvas.
     The image can be zoomed and panned within the canvas area.
-    The image is ALWAYS displayed at UL corner (0,0), but can be at many zoom levels.
+    The image is ALWAYS displayed at UL corner (0,0), but can be at many zoom/pan levels.
     
     fi,fj are the fractional i,j locations within the original image. (value = 0.0 to 1.0)
     """
