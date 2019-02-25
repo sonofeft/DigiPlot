@@ -1,4 +1,4 @@
-.. 2017-07-03 sonofeft 21fa041b25c6af83f0c05a606876740b80d7d0f6
+.. 2019-02-25 sonofeft 11b757b4e3f8ffe1da8c597191207bcbe991e8fd
    Maintain spacing of "History" and "GitHub Log" titles
 
 History
@@ -6,6 +6,34 @@ History
 
 GitHub Log
 ----------
+
+* Feb 25, 2019
+    - (by: sonofeft) 
+        - Added Delete All Data Points Button
+* Jul 11, 2017
+    - (by: sonofeft) 
+        - limited menu options based on ImageGrab availability
+* Jul 10, 2017
+    - (by: sonofeft) 
+        - conditional ImageGrab for Linux added
+        - Added paste from clipboard and realign docs
+* Jul 07, 2017
+    - (by: sonofeft) 
+        - added axes realign option
+        - Added log plot option and transparent text on plot
+* Jul 05, 2017
+    - (by: sonofeft) 
+        - Minor doc fix
+* Jul 04, 2017
+    - (by: sonofeft) 
+        - changed all images on examples page to JPG
+        - changed img display in examples.rst
+        - ran XYmath on CSV Sample Plot data
+        - Removed backup directory from project files
+        - Add a fonts subdirectory so TTF file will not be system specific
+* Jul 03, 2017
+    - (by: sonofeft) 
+        - history update
 
 * Jul 03, 2017
     - (by: sonofeft) 
