@@ -6,7 +6,10 @@ History
 
 GitHub Log
 ----------
-
+* Jul 3, 2020
+    - (by: sonofeft)
+        - Added Auto-Detect Curve
+        - Added local build git history
 * Feb 25, 2019
     - (by: sonofeft) 
         - Added Delete All Data Points Button
