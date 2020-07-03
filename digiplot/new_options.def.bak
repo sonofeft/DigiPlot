@@ -1,0 +1,106 @@
+[app_attr]
+name = new_options
+x = 1185
+y = 36
+width = 300
+height = 200
+guitype = dialog
+hideokbutton = no
+hasmenu = no
+menu = File\n  New\n  Open\n  Save\n\n  Exit\nHelp\n  Sounds\n    Moo\n    Meow
+add_menu_ctrl_keys = yes
+hasstatusbar = no
+hasstddialmess = no
+hasstddialfile = no
+hasstddialcolor = no
+hasstdalarm = no
+resizable = yes
+row_weights = 
+col_weights = 
+
+[Checkbutton_1]
+widget_type = Checkbutton
+tab_label = Main
+row = 2
+col = 2
+docstring = 
+columnspan = 
+rowspan = 
+text = log X Axis
+width = 15
+
+[Checkbutton_2]
+widget_type = Checkbutton
+tab_label = Main
+row = 3
+col = 2
+docstring = 
+columnspan = 
+rowspan = 
+text = log Y Axis
+width = 15
+
+[LabelFrame_1]
+widget_type = LabelFrame
+tab_label = Main
+row = 4
+col = 2
+docstring = 
+columnspan = 
+rowspan = 
+row_weights = 
+col_weights = 
+width = 60
+height = 50
+text = Fix Plot Alignment
+
+[Label_1]
+widget_type = Label
+tab_label = Main
+row = 1
+col = 2
+docstring = 
+columnspan = 
+rowspan = 
+text = Select Options for New Plot
+width = 30
+
+[Radiobutton_1]
+widget_type = Radiobutton
+tab_label = LabelFrame_1
+row = 2
+col = 2
+docstring = 
+columnspan = 
+rowspan = 
+value = 1
+text = Already Square
+width = 15
+anchor = w
+
+[Radiobutton_2]
+widget_type = Radiobutton
+tab_label = LabelFrame_1
+row = 3
+col = 2
+docstring = 
+columnspan = 
+rowspan = 
+value = 2
+text = 4 Corner Alignment
+width = 15
+anchor = w
+
+[Radiobutton_3]
+widget_type = Radiobutton
+tab_label = LabelFrame_1
+row = 4
+col = 2
+docstring = 
+columnspan = 
+rowspan = 
+value = 3
+text = 3 Corner Alignment
+width = 15
+anchor = w
+

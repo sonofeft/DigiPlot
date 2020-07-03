@@ -1,0 +1,14 @@
+________tk_nosy UNITTEST RUN# 1_________
+
+{Item #1} test_image_size, 
+Opened image file: D:\2020_py_proj\DigiPlot\digiplot\tests\Cu_cte.png   size= (792, 612)
+
+{Item #2} test_myclass_existence, 
+Opened image file: D:\2020_py_proj\DigiPlot\digiplot\tests\Cu_cte.png   size= (792, 612)
+
+{Item #3} test_set_origin_xy, 
+Opened image file: D:\2020_py_proj\DigiPlot\digiplot\tests\Cu_cte.png   size= (792, 612)
+
+{Item #4} test_should_always_pass_cleanly, 
+Opened image file: D:\2020_py_proj\DigiPlot\digiplot\tests\Cu_cte.png   size= (792, 612)
+

@@ -1,0 +1,241 @@
+[app_attr]
+name = auto_detect
+x = 989
+y = 55
+width = 741
+height = 560
+guitype = dialog
+hideokbutton = no
+hasmenu = no
+menu = File\n  New\n  Open\n  Save\n\n  Exit\nHelp\n  Sounds\n    Moo\n    Meow
+add_menu_ctrl_keys = yes
+hasstatusbar = no
+hasstddialmess = no
+hasstddialfile = no
+hasstddialcolor = no
+hasstdalarm = no
+resizable = yes
+row_weights = 2:1
+col_weights = 2:1
+
+[Button_1]
+widget_type = Button
+tab_label = Frame_1
+row = 8
+col = 1
+docstring = 
+columnspan = 
+rowspan = 
+text = Generate Points
+width = 15
+
+[Canvas_1]
+widget_type = Canvas
+tab_label = Main
+row = 2
+col = 2
+docstring = 
+sticky = nsew
+columnspan = 
+rowspan = 
+scrolly = no
+scrollx = no
+width = 600
+height = 500
+
+[Checkbutton_1]
+widget_type = Checkbutton
+tab_label = Frame_1
+row = 10
+col = 1
+docstring = 
+sticky = w
+columnspan = 
+rowspan = 
+text = Replace or Add
+width = 15
+justify = left
+anchor = w
+
+[Checkbutton_2]
+widget_type = Checkbutton
+tab_label = Frame_1
+row = 9
+col = 1
+docstring = 
+sticky = w
+columnspan = 
+rowspan = 
+text = Show Blur
+width = 15
+justify = left
+anchor = w
+
+[Entry_1]
+widget_type = Entry
+tab_label = Frame_1
+row = 5
+col = 1
+docstring = 
+sticky = e
+columnspan = 
+rowspan = 
+scrollx = no
+text = 0.02
+width = 17
+
+[Frame_1]
+widget_type = Frame
+tab_label = Main
+row = 2
+col = 1
+docstring = 
+sticky = ns
+columnspan = 
+rowspan = 
+row_weights = 13:1
+col_weights = 
+width = 60
+height = 50
+
+[Label_1]
+widget_type = Label
+tab_label = Frame_1
+row = 0
+col = 1
+docstring = 
+sticky = w
+columnspan = 
+rowspan = 
+text = Blur Radius
+width = 15
+anchor = w
+justify = left
+
+[Label_2]
+widget_type = Label
+tab_label = Frame_1
+row = 2
+col = 1
+docstring = 
+sticky = w
+columnspan = 
+rowspan = 
+text = #Point Intervals
+width = 15
+anchor = w
+justify = left
+
+[Label_3]
+widget_type = Label
+tab_label = Frame_1
+row = 4
+col = 1
+docstring = 
+sticky = w
+columnspan = 
+rowspan = 
+text = Explore Fraction
+width = 15
+anchor = w
+justify = left
+
+[Label_4]
+widget_type = Label
+tab_label = Frame_1
+row = 6
+col = 1
+docstring = 
+sticky = w
+columnspan = 
+rowspan = 
+text = Masking Line Width
+width = 15
+anchor = w
+justify = left
+
+[Label_5]
+widget_type = Label
+tab_label = Frame_1
+row = 11
+col = 1
+docstring = 
+sticky = w
+columnspan = 
+rowspan = 
+text = Point Opacity
+width = 15
+anchor = w
+justify = left
+
+[Spinbox_1]
+widget_type = Spinbox
+tab_label = Frame_1
+row = 1
+col = 1
+docstring = 
+sticky = e
+columnspan = 
+rowspan = 
+from_ = 1
+to = 10
+text = Blur Radius
+width = 15
+
+[Spinbox_2]
+widget_type = Spinbox
+tab_label = Frame_1
+row = 3
+col = 1
+docstring = 
+sticky = e
+columnspan = 
+rowspan = 
+from_ = 3
+to = 1000
+text = Spinbox_2
+width = 15
+
+[Spinbox_3]
+widget_type = Spinbox
+tab_label = Frame_1
+row = 7
+col = 1
+docstring = 
+sticky = e
+columnspan = 
+rowspan = 
+from_ = 1
+to = 9
+text = Spinbox_3
+width = 15
+
+[Spinbox_4]
+widget_type = Spinbox
+tab_label = Frame_1
+row = 12
+col = 1
+docstring = 
+sticky = e
+columnspan = 
+rowspan = 
+from_ = 1
+to = 255
+text = Spinbox_4
+width = 15
+
+[Text_1]
+widget_type = Text
+tab_label = Frame_1
+row = 13
+col = 1
+docstring = 
+sticky = ns
+columnspan = 
+rowspan = 
+scrolly = no
+scrollx = no
+text = Text_1
+width = 15
+height = 15
+

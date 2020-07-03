@@ -51,7 +51,7 @@ def fix_plot_img( UL, UR, LR, LL, img):
     img_rgba = img.convert('RGBA')
     pixels = img_rgba.getcolors(w*h)
     most_frequent_pixel = pixels[0][1]
-    print( 'most_frequent_pixel =',most_frequent_pixel ) # (count, (color))  e.g. (505888, (255, 255, 255, 255))
+    print( 'For background, using most_frequent_pixel =',most_frequent_pixel ) # (count, (color))  e.g. (505888, (255, 255, 255, 255))
 
     # fix original image (may have black corners from rotation/transform)
     coeffs = find_coeffs(pa, pb)

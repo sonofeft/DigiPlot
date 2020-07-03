@@ -50,9 +50,20 @@ from tkinter import Menu, StringVar, Label, SUNKEN, SW, X, BOTTOM, Frame, NE, NW
     BOTH, TOP, Button, LEFT, SE, Scrollbar, VERTICAL, Text, RIGHT, Y, END, Tk,\
     Canvas, Listbox, Entry, N, S, E, W, YES, Toplevel, ALL, Checkbutton
 
+import os, sys, zipfile, json
+from tempfile import mkstemp
+
+try:
+    from StringIO import StringIO as MemoryIO
+except:
+    from io import BytesIO as MemoryIO
+
 from PIL import Image, ImageTk
+
 from digiplot.plot_area import PlotArea, HAS_IMAGEGRAB
 from digiplot.realign_Dialog import _ReAlign
+from digiplot.auto_detect_Dialog import _auto_detect
+from digiplot.new_options_Dialog import _new_options
 
 # for multi-file projects see LICENSE file for authorship info
 # for single file projects, insert following information
@@ -65,17 +76,21 @@ __status__ = "3 - Alpha" # "3 - Alpha", "4 - Beta", "5 - Production/Stable"
 
 
 class Point( object ):
-    def __init__(self, x, y):
+    def __init__(self, x, y, fi, fj):
         
         self.x = x
         self.y = y
+        self.fi = fi
+        self.fj = fj
         
     def get_str(self):
         return '%g, %g'%(self.x, self.y)
     
-    def set_xy(self, x, y):
+    def set_xy(self, x, y, fi, fj):
         self.x = x
         self.y = y
+        self.fi = fi
+        self.fj = fj
     
     def get_xy(self):
         return self.x, self.y
@@ -136,11 +151,12 @@ class DigiPlot(object):
         scrollbar.config(command=self.Defined_Points_Listbox.yview)
         scrollbar.pack(side=RIGHT, fill=Y, expand=YES)
         self.Defined_Points_Listbox.pack(side=LEFT, fill=Y, expand=YES)
+        
         lbframe.pack(fill=Y, anchor=W, side=TOP, expand=YES)
         self.Defined_Points_Listbox_frame = lbframe
         self.Defined_Points_Listbox.bind("<ButtonRelease-1>", self.Defined_Points_Listbox_Click)
         
-        left_frame.pack(fill=Y,  side=LEFT, anchor=NW)
+        left_frame.pack(fill=Y,  side=LEFT, anchor=NW, expand=YES)
 
         # -------------------- right_frame -------------------
         # Canvas for plot
@@ -160,7 +176,7 @@ class DigiPlot(object):
         self.LogX_Checkbutton = Checkbutton(right_frame_ch1,text="Log X Scale", width="15")
         self.LogX_Checkbutton.pack(side=LEFT, anchor=W)
         self.LogX_Checkbutton_StringVar = StringVar()
-        self.LogX_Checkbutton_StringVar.set('no')        
+        self.LogX_Checkbutton_StringVar.set('no')
         self.LogX_Checkbutton.configure(variable=self.LogX_Checkbutton_StringVar, onvalue="yes", offvalue="no")
         self.LogX_Checkbutton_StringVar_traceName = self.LogX_Checkbutton_StringVar.trace_variable("w", self.LogX_Checkbutton_StringVar_Callback)
 
@@ -216,10 +232,15 @@ class DigiPlot(object):
 
         top_File = Menu(self.menuBar, tearoff=0)
 
+        top_File.add("command", label = "Open Project Zip", command = self.menu_Open_Project)
         top_File.add("command", label = "Read Image File", command = self.menu_File_Import_Image)
         if HAS_IMAGEGRAB:
             top_File.add("command", label = "Paste Clipboard Image", command = self.menu_Paste_Clipboard_Image)
         top_File.add("command", label = "Save Points to CSV", command = self.menu_File_Save_CSV)
+        top_File.add("command", label = "Save Image", command = self.menu_Save_Image)
+        top_File.add_separator()
+        top_File.add("command", label = "Save Project to Zip", command = self.menu_Save_Project)
+        
         self.menuBar.add("cascade", label="File", menu=top_File)
 
 
@@ -241,6 +262,11 @@ class DigiPlot(object):
         top_Fix.add("command", label = "4 Point Axes Align", command = self.menu_Fix_Image_4Pt)
         top_Fix.add("command", label = "3 Point Axes Align", command = self.menu_Fix_Image_3Pt)
         self.menuBar.add("cascade", label="Fix-Image-Alignment", menu=top_Fix)
+
+
+        top_Auto = Menu(self.menuBar, tearoff=0)
+        top_Auto.add("command", label = "Detect Curve", command = self.menu_Detect_Curve)
+        self.menuBar.add("cascade", label="Auto-Detect", menu=top_Auto)
 
 
         top_View = Menu(self.menuBar, tearoff=0)
@@ -508,7 +534,7 @@ class DigiPlot(object):
                 self.Plot_Canvas.create_line(0, y, self.PA.w_canv, y, fill="cyan", width=3, dash=(5,) )
         
     
-    def add_point(self, x_float, y_float):
+    def add_point(self, x_float, y_float, fi, fj):
         
         self.has_some_new_data = True
         
@@ -516,17 +542,17 @@ class DigiPlot(object):
         iL = [i for i in self.Defined_Points_Listbox.curselection()]
         
         if len(itemL)==0:
-            self.pointL.append( Point(x_float, y_float) )
+            self.pointL.append( Point(x_float, y_float, fi, fj) )
             self.Defined_Points_Listbox.insert(END, self.pointL[-1].get_str() )
             self.select_pointL(0)
         else:
             
             if len(iL)==0:
-                self.pointL.append( Point(x_float, y_float) )
+                self.pointL.append( Point(x_float, y_float, fi, fj) )
                 self.Defined_Points_Listbox.insert(END, self.pointL[-1].get_str() )
                 self.select_pointL(END)
             else:
-                self.pointL.insert(iL[0]+1, Point(x_float, y_float) )
+                self.pointL.insert(iL[0]+1, Point(x_float, y_float, fi, fj) )
                 self.Defined_Points_Listbox.insert(iL[0]+1, self.pointL[iL[0]+1].get_str() )
                 self.select_pointL(iL[0]+1)
                 
@@ -658,7 +684,7 @@ class DigiPlot(object):
         
     def MakeFit_Button_Click(self, event):
         self.menu_Fit_Image()
-        self.plot_points()
+        #self.plot_points()  # done in menu_Fit_Image
 
 
     def select_pointL(self, i ):
@@ -683,6 +709,8 @@ class DigiPlot(object):
             self.Initialize_Image_State()
             
             self.statusMessage.set("SUCCESS... Pasted Image from Clipboard")
+            
+            self.show_new_plot_options()
         else:
             self.statusMessage.set("FAILED... Pasting Image from Clipboard")
             self.ShowWarning(title='Clipboard Image Paste Failed', message='Clipboard Image Paste Failed.')
@@ -710,8 +738,199 @@ class DigiPlot(object):
                 self.master.title("DigiPlot: %s"%fName)
                 self.Initialize_Image_State()
                 self.statusMessage.set('file "%s" opened'%fName)
-            
+                
+                self.show_new_plot_options()
 
+    def menu_Open_Project(self):
+        self.statusMessage.set("called menu_Open_Project")
+        
+        if (len(self.pointL)>0) and self.has_some_new_data:
+            if not self.AskYesNo( title='Current Data NOT Saved.', \
+                              message='Import New Image?\n'+\
+                              '(Hit "Yes" to DISCARD your current data.)'):
+                return
+        
+        
+        filetypes = [
+            ('DigiPlot Zip','*.digiplot.zip'),
+            ('Any File','*.*')]
+        proj_path = tkFileDialog.askopenfilename(parent=self.master,title='Open Project Zip file', 
+            filetypes=filetypes)
+            
+        if proj_path:
+            zf = zipfile.ZipFile( os.path.abspath(proj_path) , 'r')
+            
+            img_data = zf.read( 'img.jpg' )
+            fh = MemoryIO(img_data)
+            img = Image.open(fh)
+            self.PA.set_img( img )
+
+            # Clear entries in Listbox
+            self.Defined_Points_Listbox.delete(0, END)
+            self.LogX_Checkbutton_StringVar.set('no')        
+            self.LogY_Checkbutton_StringVar.set('no')        
+            
+            self.pointL = []
+            self.has_some_new_data = False
+            
+            self.is_dragging = False
+            self.last_right_click_pos = (0,0) # any action calling Canvas_Find_Closest will set
+            
+            self.canvas_tooltip_num = 1000
+            self.canvas_tooltip_inc = 1 # set > 1 to skip some options
+            
+                                        
+            # Units NEED to be fraction of img
+            self.canvas_click_posL = [None, None, None, None] # only useful if all None's replaced
+            self.distortion_flag = False
+
+            # ========== process json data ==============
+            json_data = zf.read('digiplot_info.json')
+            J = json.loads( json_data )
+
+            self.PA.fi_origin = J['fi_origin']
+            self.PA.fj_origin = J['fj_origin']
+            self.PA.fimax = J['fimax']
+            self.PA.fjmax = J['fjmax']
+            self.PA.fi_offset = J['fi_offset']
+            self.PA.fj_offset = J['fj_offset']
+            self.PA.x_origin = J['x_origin']
+            self.PA.y_origin = J['y_origin']
+            self.PA.xmax = J['xmax']
+            self.PA.ymax = J['ymax']
+            self.PA.log_x = J['log_x']
+            self.PA.log_y = J['log_y']
+            self.PA.log10_x_origin = J['log10_x_origin']
+            self.PA.log10_y_origin = J['log10_y_origin']
+            self.PA.log10_xmax = J['log10_xmax']
+            self.PA.log10_ymax = J['log10_ymax']
+            
+            if self.PA.log_x:
+                self.LogX_Checkbutton_StringVar.set('yes')
+            else:
+                self.LogX_Checkbutton_StringVar.set('no')
+            
+            if self.PA.log_y:
+                self.LogY_Checkbutton_StringVar.set('yes')
+            else:
+                self.LogY_Checkbutton_StringVar.set('no')
+            
+            #print( J['list_of_points'] )
+            pLL = J['list_of_points']
+            for pL in pLL:
+                #print(pL)
+                x,y,fi,fj = pL
+                self.add_point(x,y,fi,fj)
+                        
+            zf.close()
+            
+            self.menu_Fit_Image()
+            
+            if 0:
+                print('self.PA.fi_origin =', self.PA.fi_origin)
+                print('self.PA.fj_origin =', self.PA.fj_origin)
+                print('self.PA.fimax =', self.PA.fimax)
+                print('self.PA.fjmax =', self.PA.fjmax)
+                print('self.PA.fi_offset =', self.PA.fi_offset)
+                print('self.PA.fj_offset =', self.PA.fj_offset)
+                print('self.PA.x_origin =', self.PA.x_origin)
+                print('self.PA.y_origin =', self.PA.y_origin)
+                print('self.PA.xmax =', self.PA.xmax)
+                print('self.PA.ymax =', self.PA.ymax)
+                print('self.PA.log_x =', self.PA.log_x)
+                print('self.PA.log_y =', self.PA.log_y)
+                print('self.PA.log10_x_origin =', self.PA.log10_x_origin)
+                print('self.PA.log10_y_origin =', self.PA.log10_y_origin)
+                print('self.PA.log10_xmax =', self.PA.log10_xmax)
+                print('self.PA.log10_ymax =', self.PA.log10_ymax)
+
+    def get_json_str(self):
+        """Describe project with JSON string"""    
+
+        pL = [(P.x,P.y,P.fi,P.fj) for P in self.pointL]
+                
+        D = {'fi_origin':self.PA.fi_origin,
+             'fj_origin':self.PA.fj_origin,
+             'fimax':self.PA.fimax,
+             'fjmax':self.PA.fjmax,
+             'fi_offset':self.PA.fi_offset,
+             'fj_offset':self.PA.fj_offset,
+             'x_origin':self.PA.x_origin,
+             'y_origin':self.PA.y_origin,
+             'xmax':self.PA.xmax,
+             'ymax':self.PA.ymax,
+             'log_x':self.PA.log_x,
+             'log_y':self.PA.log_y,
+             'log10_x_origin':self.PA.log10_x_origin,
+             'log10_y_origin':self.PA.log10_y_origin,
+             'log10_xmax':self.PA.log10_xmax,
+             'log10_ymax':self.PA.log10_ymax,
+             'list_of_points':pL}
+                 
+        return json.dumps(D, indent=4)
+                
+    
+    def menu_Save_Project(self):
+        self.statusMessage.set("called menu_Save_Project")
+        
+        filetypes = [
+            ('DigiPlot Zip','*.digiplot.zip'),
+            ('Any File','*.*')]
+                                    
+        fsave = tkFileDialog.asksaveasfilename(parent=self.master, 
+                title='Saving DigiPlot zip file', filetypes=filetypes)
+    
+        # if file name given, save it.
+        if fsave:
+            # make sure file extension is correct
+            if not fsave.lower().endswith('.digiplot.zip'):
+                fsave += '.digiplot.zip'
+                
+            zf = zipfile.ZipFile(fsave, mode='w', compression=zipfile.ZIP_DEFLATED)
+            zf.writestr('digiplot_info.json', self.get_json_str())
+            
+            if self.PA.img:
+                jpg_name = 'img.jpg'
+                fd, temp_path = mkstemp(suffix='.jpg', prefix=jpg_name)
+                #print 'Saving to Temp File:',temp_path
+                
+                im = self.PA.img.convert("RGB")
+                im.save(temp_path, 'JPEG')
+                
+                zf.write( temp_path, jpg_name )
+                os.close(fd)
+                os.remove(temp_path)
+                        
+            
+            self.statusMessage.set( 'SUCCESS in creating zip file.')
+        #finally:
+            #print 'closing'
+            zf.close()
+    
+    def menu_Save_Image(self):
+        self.statusMessage.set("called menu_Save_Image")
+        
+        filetypes = [
+            ('Image File','.png .jpg .jpeg .gif'),
+            ('Png File','.png'),
+            ('Jpeg File','.jpeg'),
+            ('Gif File','.gif'),
+            ('Any File','*.*')]
+        
+        fsave = tkFileDialog.asksaveasfilename(parent=self.master, title='Saving Image file', 
+                filetypes=filetypes)
+            
+        if fsave:
+            if fsave.find('.')<0:
+                fsave += '.png'
+            
+            self.statusMessage.set( 'Saving to:' + fsave )
+            
+            if fsave.lower().endswith('jpg') or fsave.lower().endswith('jpeg'):
+                im = self.PA.img.convert("RGB")
+                im.save( fsave, 'JPEG' )
+            else:
+                self.PA.img.save( fsave )
 
     def menu_File_Save_CSV(self):
         self.statusMessage.set("called menu_File_Save_CSV")
@@ -803,6 +1022,28 @@ class DigiPlot(object):
         self.PA.fit_img_on_canvas()
         self.plot_points()
 
+    def show_new_plot_options(self):
+        dialog = _new_options(self.master, "New Plot Options")
+        
+        if dialog.result is not None:
+            if dialog.result["Checkbutton_1"] == 'yes':
+                self.LogX_Checkbutton_StringVar.set('yes')
+            else:
+                self.LogX_Checkbutton_StringVar.set('no')        
+
+            if dialog.result["Checkbutton_2"] == 'yes':
+                self.LogY_Checkbutton_StringVar.set('yes')        
+            else:
+                self.LogY_Checkbutton_StringVar.set('no')        
+            
+            print("RadioGroup_1 =", dialog.result["RadioGroup_1"] )
+            if dialog.result["RadioGroup_1"] == '3':
+                self.menu_Fix_Image_3Pt()
+            elif dialog.result["RadioGroup_1"] == '4':
+                self.menu_Fix_Image_4Pt()
+            
+            
+
     def menu_Fix_Image_4Pt(self):
         dialog = _ReAlign(self.master, "4 Point Re-Align Plot Axes (Make Orthogonal)",\
                           dialogOptions={'img':self.PA.img})
@@ -827,6 +1068,39 @@ class DigiPlot(object):
             
         dialog.destroy()
 
+    def menu_Detect_Curve(self):
+        """Use rough-points to detect curve"""
+        
+        if len(self.pointL) < 4:
+            message = 'You need to "rough-out" the curve\nto use Automatic Curve Detection.' +\
+                      '\n\nRoughly pick at least 4 points along the curve\nand try again.'
+            self.ShowError( title='Auto-Detect Needs Help', 
+                            message=message)
+            return
+        
+        self.statusMessage.set("called menu_Detect_Curve")
+        
+        dialog = _auto_detect(self.master, "Automatic Curve Detection",\
+                          dialogOptions={'PA':self.PA, 'pointL':self.pointL})
+        
+        #print( dialog.result )
+        
+        if dialog.result is not None:
+            new_pointL = dialog.result["calc_pointL"]
+            replace_pts = dialog.result["replace_pts"]
+            
+            self.master.title("DigiPlot: Auto-Detect Results")
+            
+            self.statusMessage.set('Auto-Detect Points')
+            
+            if replace_pts == 'yes':
+                self.Delete_All_Button_Click( None )
+                
+            for x,y,fi,fj in new_pointL:
+                self.add_point(x,y,fi,fj)
+            
+        dialog.destroy()
+
     def menu_Help(self):
         self.statusMessage.set("called menu_Help")
         help_msg = """
@@ -847,7 +1121,7 @@ Esc Key = Clear Pending Actions
 
     def Plot_Canvas_Click(self, event): #click method for component ID=1
 
-        x,y = self.PA.get_xy_at_ij(event.x, event.y)
+        x,y,fi,fj = self.PA.get_xyfifj_at_ij(event.x, event.y)
 
         if self.canvas_tooltip_num < len(self.canvas_tooltip_strL):
             tt_str = self.canvas_tooltip_strL[ self.canvas_tooltip_num ]
@@ -909,7 +1183,7 @@ Esc Key = Clear Pending Actions
             #print( "clicked in canvas at i,j =",event.x,event.y)
             
             #print('x=%g, y=%g'%(x,y))
-            self.add_point(x,y)
+            self.add_point(x,y,fi,fj)
 
     def Defined_Points_Listbox_Click(self, event): #click method for component ID=2
         #print( "current selection(s) =",self.Defined_Points_Listbox.curselection())

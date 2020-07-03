@@ -331,10 +331,13 @@ class _Testdialog:
         self.Button_1.bind("<ButtonRelease-1>", self.Button_1_Click)
 
     def Button_1_Click(self, event): #click method for component ID=1
+        import os
+        here = os.path.abspath(os.path.dirname(__file__))
+        img_path = os.path.join( here, 'examples', "Tank_ExpEff_3Point.jpg" )
 
         # Load the original image:
         #img = Image.open("rot_poly_m3.jpg")
-        img = Image.open("Tank_ExpEff_3Point.jpg")
+        img = Image.open(img_path)
         dialogOptions = {'img':img, 'use_3_point':True}
         
         dialog = _ReAlign(self.master, "Test Dialog",dialogOptions=dialogOptions)

@@ -477,14 +477,23 @@ class PlotArea(object):
         fi = self.get_img_fi_from_canvas_i( i )
         fj = self.get_img_fj_from_canvas_j( j )
         return self.get_xy_at_fifj(fi, fj)
+    
+    def get_xyfifj_at_ij(self, i,j):
+        fi = self.get_img_fi_from_canvas_i( i )
+        fj = self.get_img_fj_from_canvas_j( j )
+        x,y = self.get_xy_at_fifj(fi, fj)
+        return x, y , fi, fj
 
 
     def get_canvas_i(self, x_float):
-        if self.log_x:
-            x10 = math.log10( x_float )
-            fx = (x10-self.log10_x_origin) / (self.log10_xmax-self.log10_x_origin)
-        else:
-            fx = (x_float-self.x_origin) / (self.xmax-self.x_origin)
+        try:
+            if self.log_x:
+                x10 = math.log10( x_float )
+                fx = (x10-self.log10_x_origin) / (self.log10_xmax-self.log10_x_origin)
+            else:
+                fx = (x_float-self.x_origin) / (self.xmax-self.x_origin)
+        except:
+            return -1
         
         f_plot = self.fimax - self.fi_origin # fraction of canvas holding plot
         i_plot = fx * f_plot * self.w_img * self.img_zoom # i value into plot from origin
@@ -499,11 +508,14 @@ class PlotArea(object):
             return -1 # if not on canvas
         
     def get_canvas_j(self, y_float):
-        if self.log_y:
-            y10 = math.log10( y_float )
-            fy = (y10-self.log10_y_origin) / (self.log10_ymax-self.log10_y_origin)
-        else:
-            fy = (y_float-self.y_origin) / (self.ymax-self.y_origin)
+        try:
+            if self.log_y:
+                y10 = math.log10( y_float )
+                fy = (y10-self.log10_y_origin) / (self.log10_ymax-self.log10_y_origin)
+            else:
+                fy = (y_float-self.y_origin) / (self.ymax-self.y_origin)
+        except:
+            return -1
         
         f_plot = self.fj_origin - self.fjmax # fraction of canvas holding plot
         j_plot = fy * f_plot * self.h_img * self.img_zoom # i value into plot from origin
@@ -558,6 +570,8 @@ if __name__ == '__main__':
             
         print()
         print( 'x,y at 306,304 =',PA.get_xy_at_ij(306,304) )
+        print( 'x,y,fi,fj at 306,304 =',PA.get_xyfifj_at_ij(306,304) )
+        print()
     else:
         print('='*20,' Offset')
         PA.set_fraction_offset(fi=0.1, fj=0.1)
@@ -571,6 +585,7 @@ if __name__ == '__main__':
             
         print()
         print( 'x,y at 481,0 =',PA.get_xy_at_ij(481,0) )
+        print( 'x,y,fi,fj at 481,0 =',PA.get_xyfifj_at_ij(481,0) )
 
         img_slice_resized = PA.get_zoomed_offset_img(greyscale=True, show_linlog_text=True)
         img_slice_resized.save('test_offset_img.png')
