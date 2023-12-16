@@ -1,3 +1,4 @@
 future
 Pillow
 numpy
+scipy
