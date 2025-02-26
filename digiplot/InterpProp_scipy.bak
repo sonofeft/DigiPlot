@@ -2,8 +2,7 @@
 # Oct,21 2005
 '''Interpolated Properties'''
 
-from scipy import  interpolate
-from numpy import array, float64
+from scipy import array, float64, interpolate
 
 class InterpProp:
     '''Interpolate tables of properties
@@ -112,8 +111,8 @@ class InterpProp:
         dx = self.delX * stepFrac
         return (self(xval+dx) - self(xval-dx)) / 2.0 / dx
           
-def dev_tests(): #Self Test
-    import matplotlib.pyplot as plt
+if __name__ == "__main__": #Self Test
+    from pylab import *
 
     x = [1,2,6,4,5]
     y = [10,40,360,160,250]
@@ -174,7 +173,3 @@ def dev_tests(): #Self Test
     plt.plot( q.x, q.y, 'o-' )
     plt.grid()
     plt.show()
-
-if __name__ == "__main__":
-    dev_tests()
-
