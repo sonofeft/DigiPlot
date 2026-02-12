@@ -6,6 +6,11 @@ History
 
 GitHub Log
 ----------
+* Feb 11, 2026
+    - (by: sonofeft)
+        - Fixed Pillow broken backward compatibility
+        - version 0.1.6
+
 * Jul 3, 2020
     - (by: sonofeft)
         - Added Auto-Detect Curve

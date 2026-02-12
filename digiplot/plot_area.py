@@ -13,6 +13,15 @@ try:
 except:
     HAS_IMAGEGRAB = False
 
+
+try:
+    # Pillow >= 9.1
+    RESAMPLE = Image.Resampling.LANCZOS
+except AttributeError:
+    # Pillow < 9.1
+    RESAMPLE = Image.ANTIALIAS
+
+
 if sys.version_info < (3,):
     from cStringIO import StringIO
 else:
@@ -30,6 +39,14 @@ freefont36  =  ImageFont.truetype ( font_path, 36 )
 freefont48  =  ImageFont.truetype ( font_path, 48 )
 freefont72  =  ImageFont.truetype ( font_path, 72 )
 
+def text_size(font, s):
+    # Pillow < 10
+    if hasattr(font, "getsize"):
+        return font.getsize(s)
+
+    # Pillow >= 10
+    bbox = font.getbbox(s)
+    return (bbox[2] - bbox[0], bbox[3] - bbox[1])
 
 def clamp(n, minn, maxn):
     if n < minn:
@@ -257,7 +274,8 @@ class PlotArea(object):
         img_slice = self.img.crop( (imin,jmin, imax,jmax) )
         wz = int((imax-imin+1)*self.img_zoom)
         hz = int((jmax-jmin+1)*self.img_zoom)
-        img_slice_resized = img_slice.resize( (wz, hz), Image.ANTIALIAS)
+        img_slice_resized = img_slice.resize( (wz, hz), RESAMPLE)
+		
         
         if (wz>self.w_canv) or (hz>self.h_canv):
             bbox = (0,0, min(wz,self.w_canv), min(hz,self.h_canv))
@@ -280,7 +298,8 @@ class PlotArea(object):
             def get_font_for_size( s, w_lim ):
                 myfont = freefont10
                 for test_font in [freefont16, freefont24, freefont36, freefont48, freefont72]:
-                    wtext, htext = test_font.getsize(s)
+                    # wtext, htext = test_font.getsize(s)
+                    wtext, htext = text_size(test_font, s)
                     if wtext >= w_lim:
                         return myfont
                     myfont = test_font
@@ -295,7 +314,10 @@ class PlotArea(object):
                     ylab = 'linear scale'
                     color = (0,255,0,120) # green
                 myfont = get_font_for_size( 'logear scale', min(w,h)/2 )
-                di, dj = myfont.getsize(ylab)
+                # di, dj = myfont.getsize(ylab)
+                di, dj = text_size(myfont, ylab)
+
+
                 itxt = (h-di)/2
                 draw.text( (itxt,d-dj),ylab, font=myfont, fill=color )
             
@@ -312,14 +334,16 @@ class PlotArea(object):
                 else:
                     xlab = 'linear scale'
                     color = (0,255,0,120) # green
-                di, dj = myfont.getsize(xlab)
+                # di, dj = myfont.getsize(xlab)
+                di, dj = text_size(myfont, xlab)
                 itxt = (w-di)/2
                 draw.text( (itxt,h-dj),xlab, font=myfont, fill=color )
 
             # center text (if any)
             if text:
                 myfont = get_font_for_size( text, w )
-                di, dj = myfont.getsize(text)
+                # di, dj = myfont.getsize(text)
+                di, dj = text_size(myfont, text)
                 itxt = (w-di)/2
                 jtxt = (h-dj)/2
                 
